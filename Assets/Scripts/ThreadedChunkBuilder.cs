@@ -6,6 +6,11 @@ using UnityEngine;
 
 public class ThreadedChunkBuilder
 {
+    int octaves = 3;
+    float frequency = 0.0625f;
+    float persistence = 0.5f;
+    float lacunarity = 2f;
+
     private int seed;
     public int Seed { get { return seed; } set { SetSeed(value); } }
 
@@ -133,15 +138,26 @@ public class ThreadedChunkBuilder
 
     public bool Evaluate3DNoise(Vector3 position)
     {
+        float noise = 0f;
+        float divisor = 0f;
+
         switch (position.y)
         {
             case 0: return true;
             //case 127: return false;
         }
-        // if (position.y > 63) return false;
-        float result = baseNoise.Evaluate(position * 0.0625f / 3);
-        if (result > 0)
+        for (int octave = 0; octave < octaves; octave++)
+        {
+            noise += baseNoise.Evaluate(position * Mathf.Pow(lacunarity, octave) * frequency / 3) * Mathf.Pow(persistence, octave);
+            divisor += Mathf.Pow(persistence, octave);
+        }
+        noise /= divisor;
+
+        // float result = baseNoise.Evaluate(position * 0.0625f / 3);
+        //if (position.y < 52) return true;
+        if (-3.5 + position.y / 25f < noise)
             return true;
+        // if (result > 0)
         return false;
     }
 }
