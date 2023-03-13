@@ -78,6 +78,8 @@ public class Generator : MonoBehaviour
 
     private ThreadedChunkBuilder threadedChunkBuilder;
 
+    [SerializeField] private bool logPerformance;
+
     private void Awake()
     {
         SetSeed(Random.Range(int.MinValue, int.MaxValue));
@@ -407,7 +409,9 @@ public class Generator : MonoBehaviour
         Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
 
         Stopwatch stopwatch1 = new();
-        stopwatch1.Start();
+        if (logPerformance)
+            stopwatch1.Start();
+
         for (int level = 0; level < height; level++)
         {
             GameObject subChunk = new();
@@ -415,22 +419,29 @@ public class Generator : MonoBehaviour
             //subChunk.transform.position = new(0, 0, 0); //level * size
             //yield return null;
         }
-        stopwatch1.Stop();
-        print($"Chunk Object Creation: {stopwatch1.Elapsed.Milliseconds}");
 
-        stopwatch1.Restart();
+        if (logPerformance)
+        {
+            stopwatch1.Stop();
+            print($"Chunk Object Creation: {stopwatch1.Elapsed.Milliseconds}");
+            stopwatch1.Restart();
+        }
+
         Task[] blockDataTasks = new Task[height];
         for (int level = 0; level < height; level++)
         {
             blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, rootPos, cornerPos, level, size);
         }
         Task.WaitAll(blockDataTasks);
-        stopwatch1.Stop();
-        print($"Block Generation: {stopwatch1.Elapsed.Milliseconds}");
-
+        if (logPerformance)
+        {
+            stopwatch1.Stop();
+            print($"Block Generation: {stopwatch1.Elapsed.Milliseconds}");
+        }
         yield return null;
-
-        stopwatch1.Restart();
+        
+        if (logPerformance)
+            stopwatch1.Restart();
         List<BlockAndItsFaces>[] chunkData = new List<BlockAndItsFaces>[height];
         Task[] blockSidesTasks = new Task[height];
         for (int level = 0; level < height; level++)
@@ -438,11 +449,15 @@ public class Generator : MonoBehaviour
             blockSidesTasks[level] = threadedChunkBuilder.StartBuildBlockSides(chunk, chunkData, level, size, height);
         }
         Task.WaitAll(blockSidesTasks);
-        stopwatch1.Stop();
-        print($"Face Finding: {stopwatch1.Elapsed.Milliseconds}");
-
+        if (logPerformance)
+        {
+            stopwatch1.Stop();
+            print($"Face Finding: {stopwatch1.Elapsed.Milliseconds}");
+        }
         yield return null;
 
+        if (logPerformance)
+            stopwatch1.Restart();
         int num = 0;
         foreach (List<BlockAndItsFaces> subChunkBlockData in chunkData)
         {
@@ -477,7 +492,11 @@ public class Generator : MonoBehaviour
             num++;
             // yield return null;
         }
-
+        if (logPerformance)
+        {
+            stopwatch1.Stop();
+            print($"Mesh Creation: {stopwatch1.Elapsed.Milliseconds}");
+        }
         callback.Invoke(generatedChunk);
     }
 }

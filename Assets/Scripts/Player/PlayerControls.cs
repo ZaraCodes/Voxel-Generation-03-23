@@ -60,10 +60,10 @@ public class PlayerControls : MonoBehaviour
         }
         if (!CharCtrl.isGrounded)
         {
-            veloY += -0.07f * Time.deltaTime;
+            veloY += -0.1f * Time.deltaTime;
             direction.y = veloY;
         }
-        else if (veloY > 0f)
+        else if (veloY < 0f)
         {
             veloY = 0f;
             direction.y = veloY;
