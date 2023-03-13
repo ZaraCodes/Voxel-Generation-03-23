@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class Chunk : MonoBehaviour
 {
-    public Dictionary<string, Block>[] subChunks;
+    public Block[,,,] subChunks;
 
     private void OnEnable()
     {

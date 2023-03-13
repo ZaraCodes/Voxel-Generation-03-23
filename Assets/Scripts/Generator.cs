@@ -402,7 +402,7 @@ public class Generator : MonoBehaviour
         generatedChunk.transform.position = rootPos;
         generatedChunk.name = "UwU";
         Chunk chunk = generatedChunk.AddComponent<Chunk>();
-        chunk.subChunks = new Dictionary<string, Block>[height];
+        chunk.subChunks = new Block[height, size, size, size];
 
         Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
 
@@ -410,7 +410,6 @@ public class Generator : MonoBehaviour
         stopwatch1.Start();
         for (int level = 0; level < height; level++)
         {
-            chunk.subChunks[level] = new();
             GameObject subChunk = new();
             subChunk.transform.parent = generatedChunk.transform;
             //subChunk.transform.position = new(0, 0, 0); //level * size
