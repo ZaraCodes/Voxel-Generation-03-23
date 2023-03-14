@@ -51,16 +51,16 @@ public class PlayerControls : MonoBehaviour
     {
         Vector3 direction = Input.GetAxis("Horizontal") * transform.right + Input.GetAxis("Vertical") * transform.forward;
 
-        direction = Vector3.ClampMagnitude(direction, 1) * moveSpeed * Time.deltaTime;
+        direction = Vector3.ClampMagnitude(direction, 1) * moveSpeed;
 
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            veloY = .03f;
+            veloY = 4.03f;
             direction.y = veloY;
         }
         if (!CharCtrl.isGrounded)
         {
-            veloY += -0.1f * Time.deltaTime;
+            veloY += -9.81f * Time.deltaTime;
             direction.y = veloY;
         }
         else if (veloY < 0f)
@@ -69,7 +69,7 @@ public class PlayerControls : MonoBehaviour
             direction.y = veloY;
         }
 
-        CharCtrl.Move(direction);
+        CharCtrl.Move(direction * Time.deltaTime);
     }
 
     /// <summary>
