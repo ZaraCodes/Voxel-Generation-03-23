@@ -402,7 +402,7 @@ public class Generator : MonoBehaviour
         GameObject generatedChunk = new();
         generatedChunk.transform.parent = parent;
         generatedChunk.transform.position = rootPos;
-        generatedChunk.name = "UwU";
+        generatedChunk.name = $"{rootPos.x / size}/{rootPos.z / size}";
         Chunk chunk = generatedChunk.AddComponent<Chunk>();
         chunk.subChunks = new Block[height, size, size, size];
 
@@ -423,7 +423,7 @@ public class Generator : MonoBehaviour
         if (logPerformance)
         {
             stopwatch1.Stop();
-            print($"Chunk Object Creation: {stopwatch1.Elapsed.Milliseconds}");
+            print($"Chunk {chunk.name} Chunk Object Creation: {stopwatch1.Elapsed.Milliseconds}");
             stopwatch1.Restart();
         }
 
@@ -436,7 +436,7 @@ public class Generator : MonoBehaviour
         if (logPerformance)
         {
             stopwatch1.Stop();
-            print($"Block Generation: {stopwatch1.Elapsed.Milliseconds}");
+            print($"Chunk {chunk.name} Block Generation: {stopwatch1.Elapsed.Milliseconds}");
         }
         yield return null;
         
@@ -452,7 +452,7 @@ public class Generator : MonoBehaviour
         if (logPerformance)
         {
             stopwatch1.Stop();
-            print($"Face Finding: {stopwatch1.Elapsed.Milliseconds}");
+            print($"Chunk {chunk.name} Face Finding: {stopwatch1.Elapsed.Milliseconds}");
         }
         yield return null;
 
@@ -495,7 +495,7 @@ public class Generator : MonoBehaviour
         if (logPerformance)
         {
             stopwatch1.Stop();
-            print($"Mesh Creation: {stopwatch1.Elapsed.Milliseconds}");
+            print($"Chunk {chunk.name} Mesh Creation: {stopwatch1.Elapsed.Milliseconds}");
         }
         callback.Invoke(generatedChunk);
     }

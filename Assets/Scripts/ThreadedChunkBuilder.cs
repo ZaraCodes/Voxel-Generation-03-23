@@ -63,7 +63,9 @@ public class ThreadedChunkBuilder
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
                         //if (chunk.subChunks[lookupY].TryGetValue($"{block.position.x + blockSide.Item1}/{block.position.y + blockSide.Item2}/{block.position.z + blockSide.Item3}", out Block neighborBlock))
-                        try
+                        //try
+                        //{
+                        if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
                             if (chunk.subChunks[
                                 level,
@@ -75,13 +77,21 @@ public class ThreadedChunkBuilder
                                 AddBlockFace(faces, blockSide);
                             }
                         }
-                        catch
+                        else
                         {
                             if (!Evaluate3DNoise(new(block.position.x + blockSide.Item1, block.position.y + blockSide.Item2, block.position.z + blockSide.Item3)))
                             {
                                 AddBlockFace(faces, blockSide);
                             }
                         }
+                        //}
+                        //catch
+                        //{
+                        //    if (!Evaluate3DNoise(new(block.position.x + blockSide.Item1, block.position.y + blockSide.Item2, block.position.z + blockSide.Item3)))
+                        //    {
+                        //        AddBlockFace(faces, blockSide);
+                        //    }
+                        //}
                     }
                     BlockAndItsFaces blockAndItsFaces = new()
                     {

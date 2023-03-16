@@ -393,7 +393,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   generator: {fileID: 1082325506}
   viewerTransform: {fileID: 963194228}
-  renderDistance: 2
+  renderDistance: 3
   chunkSize: 16
   resolution: 2
   width: 16
