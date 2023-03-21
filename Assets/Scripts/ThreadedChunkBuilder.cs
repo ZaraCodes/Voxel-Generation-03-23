@@ -122,8 +122,16 @@ public class ThreadedChunkBuilder
                 {
                     Block b = new();
                     b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, level * size + y, (int)(rootPos.z + cornerPos.z) + z);
-                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Grass;
-                    else b.type = BlockType.Air;
+                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Stone;
+                    else
+                    {
+                        b.type = BlockType.Air;
+                        if (y != 0)
+                        {
+                            if (chunk.subChunks[level, x, y - 1, z].type == BlockType.Stone) chunk.subChunks[level, x, y - 1, z].type = BlockType.Grass;
+                            if (y > 1 && chunk.subChunks[level, x, y - 2, z].type == BlockType.Stone) chunk.subChunks[level, x, y - 2, z].type = BlockType.Dirt;
+                        }
+                    }
                     chunk.subChunks[level, x, y, z] = b;
                 }
             }

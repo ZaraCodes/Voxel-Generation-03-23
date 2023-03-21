@@ -466,6 +466,7 @@ public class Generator : MonoBehaviour
 
         if (logPerformance)
             stopwatch1.Restart();
+
         int num = 0;
         foreach (List<BlockAndItsFaces> subChunkBlockData in chunkData)
         {
