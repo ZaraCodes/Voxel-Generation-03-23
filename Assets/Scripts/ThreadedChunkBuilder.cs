@@ -96,7 +96,8 @@ public class ThreadedChunkBuilder
                     BlockAndItsFaces blockAndItsFaces = new()
                     {
                         position = block.position,
-                        blockFaces = faces.ToArray()
+                        blockFaces = faces.ToArray(),
+                        blockType = block.type,
                     };
                     subChunkData.Add(blockAndItsFaces);
                 }
@@ -121,7 +122,7 @@ public class ThreadedChunkBuilder
                 {
                     Block b = new();
                     b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, level * size + y, (int)(rootPos.z + cornerPos.z) + z);
-                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Stone;
+                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Grass;
                     else b.type = BlockType.Air;
                     chunk.subChunks[level, x, y, z] = b;
                 }

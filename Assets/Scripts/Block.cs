@@ -11,5 +11,7 @@ public class Block
 public enum BlockType
 {
     Air,
-    Stone
+    Stone,
+    Dirt,
+    Grass
 }

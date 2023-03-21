@@ -299,7 +299,7 @@ public class Generator : MonoBehaviour
 
                     vertIdx += 4;
 
-                    uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                    uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
                     break;
                 case BlockFace.Ydown:
                     {
@@ -318,7 +318,7 @@ public class Generator : MonoBehaviour
 
                         vertIdx += 4;
 
-                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                        uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
 
                         break;
                     }
@@ -339,7 +339,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                        uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
 
                         break;
                     }
@@ -359,7 +359,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                        uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
 
                         break;
                     }
@@ -380,7 +380,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                        uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
 
                         break;
                     }
@@ -398,7 +398,7 @@ public class Generator : MonoBehaviour
                     triangles.Add(vertIdx + 2);
                     vertIdx += 4;
 
-                    uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+                    uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
 
                     break;
             }
@@ -520,5 +520,6 @@ public struct BlockAndItsFaces
 {
     public Vector3 position;
     public BlockFace[] blockFaces;
+    public BlockType blockType;
 }
 

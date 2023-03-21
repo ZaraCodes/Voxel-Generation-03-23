@@ -4,23 +4,57 @@ using UnityEngine;
 
 public class UVSetter : MonoBehaviour
 {
-    public static Vector2[] GetUVs(BlockType blockType)
+    public static Vector2[] GetUVs(BlockType blockType, BlockFace blockFace)
     {
-        Vector2[] uvs = new Vector2[4];
         switch (blockType)
         {
+            case BlockType.Grass:
+                return GetTopOrientedBlockUVs(blockFace, TileType.Grass, TileType.Dirt, TileType.GrassSide);
+            case BlockType.Dirt:
+                return SetUVs(TileType.Dirt);
             case BlockType.Stone:
-                uvs[0] = tileCoordinates[BlockType.Stone] + new Vector2(.002f, .998f) / 32f;
-                uvs[1] = tileCoordinates[BlockType.Stone] + new Vector2(.002f, .002f) / 32f;
-                uvs[2] = tileCoordinates[BlockType.Stone] + new Vector2(.998f, .002f) / 32f;
-                uvs[3] = tileCoordinates[BlockType.Stone] + new Vector2(.998f, .998f) / 32f;
-                break;
+                return SetUVs(TileType.Stone);
         }
+        return new Vector2[0];
+    }
+
+    private static Vector2[] GetTopOrientedBlockUVs(BlockFace blockFace, TileType topTile, TileType bottomTile, TileType sidesTile)
+    {
+        switch (blockFace)
+        {
+            case BlockFace.Yup:
+                return SetUVs(topTile);
+            case BlockFace.Ydown:
+                return SetUVs(bottomTile);
+            default:
+                return SetUVs(sidesTile);
+        }
+    }
+
+    private static Vector2[] SetUVs(TileType tileType)
+    {
+        Vector2[] uvs = new Vector2[4];
+        uvs[0] = tileCoordinates[tileType] + new Vector2(.002f, .998f) / 32f;
+        uvs[1] = tileCoordinates[tileType] + new Vector2(.002f, .002f) / 32f;
+        uvs[2] = tileCoordinates[tileType] + new Vector2(.998f, .002f) / 32f;
+        uvs[3] = tileCoordinates[tileType] + new Vector2(.998f, .998f) / 32f;
         return uvs;
     }
 
-    private static Dictionary<BlockType, Vector2> tileCoordinates = new Dictionary<BlockType, Vector2>()
+
+    private static Dictionary<TileType, Vector2> tileCoordinates = new Dictionary<TileType, Vector2>()
     {
-        { BlockType.Stone, new Vector2(0, 0) / 32}
+        { TileType.Stone, new Vector2(0, 0) / 32 },
+        { TileType.Grass, new Vector2(1, 0) / 32 },
+        { TileType.Dirt, new Vector2(2, 0) / 32 },
+        { TileType.GrassSide, new Vector2(3, 0) / 32 },
     };
+}
+
+public enum TileType
+{
+    Stone,
+    Dirt,
+    Grass,
+    GrassSide
 }
