@@ -43,7 +43,7 @@ public class ThreadedChunkBuilder
                 for (int k = 0; k < size; k++)
                 {
                     Block block = chunk.subChunks[level, i, j, k];
-                    if (block.type == "air") continue;
+                    if (block.type == BlockType.Air) continue;
                     List<BlockFace> faces = new List<BlockFace>();
 
                     foreach ((int, int, int) blockSide in blockSides)
@@ -72,7 +72,7 @@ public class ThreadedChunkBuilder
                                 i + blockSide.Item1,
                                 j + blockSide.Item2,
                                 k + blockSide.Item3
-                                ].type == "air")
+                                ].type == BlockType.Air)
                             {
                                 AddBlockFace(faces, blockSide);
                             }
@@ -121,8 +121,8 @@ public class ThreadedChunkBuilder
                 {
                     Block b = new();
                     b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, level * size + y, (int)(rootPos.z + cornerPos.z) + z);
-                    if (Evaluate3DNoise(b.position)) b.type = "solid";
-                    else b.type = "air";
+                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Stone;
+                    else b.type = BlockType.Air;
                     chunk.subChunks[level, x, y, z] = b;
                 }
             }

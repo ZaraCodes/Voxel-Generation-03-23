@@ -278,28 +278,28 @@ public class Generator : MonoBehaviour
         return worldHeight;
     }
 
-    public void GenerateFace(BlockAndItsFaces blockAndItsFaces, List<int> triangles, List<Vector3> vertices, ref int vertIdx)
+    public void GenerateFace(BlockAndItsFaces blockAndItsFaces, List<int> triangles, List<Vector3> vertices, List<Vector2> uvs, ref int vertIdx)
     {
         foreach (BlockFace direction in blockAndItsFaces.blockFaces)
         {
             switch (direction)
             {
                 case BlockFace.Yup:
-                    vertices.Add(blockAndItsFaces.position);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.right);
-                    vertices.Add(blockAndItsFaces.position);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.right);
                     vertices.Add(blockAndItsFaces.position + Vector3.right);
+                    vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.right);
+                    vertices.Add(blockAndItsFaces.position + Vector3.forward);
+                    vertices.Add(blockAndItsFaces.position);
 
                     triangles.Add(vertIdx);
-                    triangles.Add(vertIdx + 1);
                     triangles.Add(vertIdx + 2);
+                    triangles.Add(vertIdx + 1);
+                    triangles.Add(vertIdx);
                     triangles.Add(vertIdx + 3);
-                    triangles.Add(vertIdx + 4);
-                    triangles.Add(vertIdx + 5);
+                    triangles.Add(vertIdx + 2);
 
-                    vertIdx += 6;
+                    vertIdx += 4;
+
+                    uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
                     break;
                 case BlockFace.Ydown:
                     {
@@ -307,18 +307,19 @@ public class Generator : MonoBehaviour
                         vertices.Add(rootPos);
                         vertices.Add(rootPos + Vector3.forward);
                         vertices.Add(rootPos + Vector3.forward + Vector3.right);
-                        vertices.Add(rootPos);
-                        vertices.Add(rootPos + Vector3.forward + Vector3.right);
                         vertices.Add(rootPos + Vector3.right);
 
                         triangles.Add(vertIdx);
                         triangles.Add(vertIdx + 2);
                         triangles.Add(vertIdx + 1);
+                        triangles.Add(vertIdx);
                         triangles.Add(vertIdx + 3);
-                        triangles.Add(vertIdx + 5);
-                        triangles.Add(vertIdx + 4);
+                        triangles.Add(vertIdx + 2);
 
-                        vertIdx += 6;
+                        vertIdx += 4;
+
+                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+
                         break;
                     }
                 case BlockFace.Xup:
@@ -326,72 +327,79 @@ public class Generator : MonoBehaviour
                         Vector3 rootPos = blockAndItsFaces.position + Vector3.right;
 
                         vertices.Add(rootPos);
-                        vertices.Add(rootPos + Vector3.forward);
-                        vertices.Add(rootPos + Vector3.forward + Vector3.down);
-                        vertices.Add(rootPos);
-                        vertices.Add(rootPos + Vector3.forward + Vector3.down);
                         vertices.Add(rootPos + Vector3.down);
+                        vertices.Add(rootPos + Vector3.forward + Vector3.down);
+                        vertices.Add(rootPos + Vector3.forward);
 
                         triangles.Add(vertIdx);
-                        triangles.Add(vertIdx + 1);
                         triangles.Add(vertIdx + 2);
+                        triangles.Add(vertIdx + 1);
+                        triangles.Add(vertIdx);
                         triangles.Add(vertIdx + 3);
-                        triangles.Add(vertIdx + 4);
-                        triangles.Add(vertIdx + 5);
-                        vertIdx += 6;
+                        triangles.Add(vertIdx + 2);
+                        vertIdx += 4;
+
+                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+
                         break;
                     }
                 case BlockFace.Xdown:
-                    vertices.Add(blockAndItsFaces.position);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.down);
-                    vertices.Add(blockAndItsFaces.position);
-                    vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.down);
-                    vertices.Add(blockAndItsFaces.position + Vector3.down);
-
-                    triangles.Add(vertIdx);
-                    triangles.Add(vertIdx + 2);
-                    triangles.Add(vertIdx + 1);
-                    triangles.Add(vertIdx + 3);
-                    triangles.Add(vertIdx + 5);
-                    triangles.Add(vertIdx + 4);
-                    vertIdx += 6;
-                    break;
-                case BlockFace.Zup:
                     {
-                        Vector3 rootPos = blockAndItsFaces.position + Vector3.forward;
-
+                        Vector3 rootPos = blockAndItsFaces.position + Vector3.down;
+                        vertices.Add(rootPos + Vector3.forward + Vector3.up);
+                        vertices.Add(rootPos + Vector3.forward);
                         vertices.Add(rootPos);
-                        vertices.Add(rootPos + Vector3.down);
-                        vertices.Add(rootPos + Vector3.down + Vector3.right);
-                        vertices.Add(rootPos);
-                        vertices.Add(rootPos + Vector3.down + Vector3.right);
-                        vertices.Add(rootPos + Vector3.right);
+                        vertices.Add(rootPos + Vector3.up);
 
                         triangles.Add(vertIdx);
-                        triangles.Add(vertIdx + 1);
                         triangles.Add(vertIdx + 2);
+                        triangles.Add(vertIdx + 1);
+                        triangles.Add(vertIdx);
                         triangles.Add(vertIdx + 3);
-                        triangles.Add(vertIdx + 4);
-                        triangles.Add(vertIdx + 5);
-                        vertIdx += 6;
+                        triangles.Add(vertIdx + 2);
+                        vertIdx += 4;
+
+                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+
+                        break;
+                    }
+                case BlockFace.Zup:
+                    {
+                        Vector3 rootPos = blockAndItsFaces.position + Vector3.forward + Vector3.down;
+
+                        vertices.Add(rootPos + Vector3.up + Vector3.right);
+                        vertices.Add(rootPos + Vector3.right);
+                        vertices.Add(rootPos);
+                        vertices.Add(rootPos + Vector3.up);
+
+                        triangles.Add(vertIdx);
+                        triangles.Add(vertIdx + 2);
+                        triangles.Add(vertIdx + 1);
+                        triangles.Add(vertIdx);
+                        triangles.Add(vertIdx + 3);
+                        triangles.Add(vertIdx + 2);
+                        vertIdx += 4;
+
+                        uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+
                         break;
                     }
                 case BlockFace.Zdown:
                     vertices.Add(blockAndItsFaces.position);
                     vertices.Add(blockAndItsFaces.position + Vector3.down);
                     vertices.Add(blockAndItsFaces.position + Vector3.down + Vector3.right);
-                    vertices.Add(blockAndItsFaces.position);
-                    vertices.Add(blockAndItsFaces.position + Vector3.down + Vector3.right);
                     vertices.Add(blockAndItsFaces.position + Vector3.right);
 
                     triangles.Add(vertIdx);
                     triangles.Add(vertIdx + 2);
                     triangles.Add(vertIdx + 1);
+                    triangles.Add(vertIdx);
                     triangles.Add(vertIdx + 3);
-                    triangles.Add(vertIdx + 5);
-                    triangles.Add(vertIdx + 4);
-                    vertIdx += 6;
+                    triangles.Add(vertIdx + 2);
+                    vertIdx += 4;
+
+                    uvs.AddRange(UVSetter.GetUVs(BlockType.Stone));
+
                     break;
             }
         }
@@ -468,12 +476,13 @@ public class Generator : MonoBehaviour
 
             List<int> triangles = new List<int>();
             List<Vector3> vertices = new List<Vector3>();
+            List<Vector2> uvs = new List<Vector2>();
 
             int vertIdx = 0;
             // int loopIdx = 0;
             foreach (BlockAndItsFaces blockData in subChunkBlockData)
             {
-                GenerateFace(blockData, triangles, vertices, ref vertIdx);
+                GenerateFace(blockData, triangles, vertices, uvs, ref vertIdx);
                 // if (loopIdx++ % 100 == 0) yield return null;
             }
             // Debug.Log(loopIdx);
@@ -482,6 +491,7 @@ public class Generator : MonoBehaviour
 
             mesh.Clear();
             mesh.vertices = vertices.ToArray();
+            mesh.uv = uvs.ToArray();
             mesh.triangles = triangles.ToArray();
             mesh.RecalculateNormals();
 
