@@ -1,7 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
-using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -35,7 +33,7 @@ public class ThreadedChunkBuilder
         return Task.Run(() => { BuildBlockSides(chunk, chunkData, level, size, height); });
     }
 
-    private void BuildBlockSides(Chunk chunk, List<BlockAndItsFaces>[] chunkData, int level, int size, int height)
+    public void BuildBlockSides(Chunk chunk, List<BlockAndItsFaces>[] chunkData, int level, int size, int height, bool chunkGeneration = true)
     {
         List<BlockAndItsFaces> subChunkData = new List<BlockAndItsFaces>();
         for (int i = 0; i < size; i++)
@@ -79,21 +77,14 @@ public class ThreadedChunkBuilder
                                 AddBlockFace(faces, blockSide);
                             }
                         }
-                        else
+                        // only execute this if this method gets called during chunk generation
+                        else if (chunkGeneration)
                         {
                             if (!Evaluate3DNoise(new(block.position.x + blockSide.Item1, block.position.y + blockSide.Item2, block.position.z + blockSide.Item3)))
                             {
                                 AddBlockFace(faces, blockSide);
                             }
                         }
-                        //}
-                        //catch
-                        //{
-                        //    if (!Evaluate3DNoise(new(block.position.x + blockSide.Item1, block.position.y + blockSide.Item2, block.position.z + blockSide.Item3)))
-                        //    {
-                        //        AddBlockFace(faces, blockSide);
-                        //    }
-                        //}
                     }
                     BlockAndItsFaces blockAndItsFaces = new()
                     {
@@ -105,7 +96,113 @@ public class ThreadedChunkBuilder
                 }
             }
         }
-        chunkData[level] = subChunkData;
+        if (chunkGeneration) chunkData[level] = subChunkData;
+        else chunkData[0] = subChunkData;
+    }
+
+    public List<BlockAndItsFaces> BuildBlockSides(Chunk chunk, Chunk[] neighborChunks, int level, int size, int height)
+    {
+        List<BlockAndItsFaces> subChunkData = new List<BlockAndItsFaces>();
+        for (int i = 0; i < size; i++)
+        {
+            for (int j = 0; j < size; j++)
+            {
+                for (int k = 0; k < size; k++)
+                {
+                    Block block = chunk.subChunks[level, i, j, k];
+                    if (block.type == BlockType.Air) continue;
+                    List<BlockFace> faces = new List<BlockFace>();
+
+                    foreach ((int, int, int) blockSide in blockSides)
+                    {
+                        if (block.position.y + blockSide.Item2 < 0)
+                        {
+                            AddBlockFace(faces, blockSide);
+                            continue;
+                        }
+                        else if (block.position.y + blockSide.Item2 >= size * height)
+                        {
+                            AddBlockFace(faces, blockSide);
+                            continue;
+                        }
+                        int lookupY = ((int)block.position.y + blockSide.Item2) / size;
+
+                        if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
+
+                        //if (chunk.subChunks[lookupY].TryGetValue($"{block.position.x + blockSide.Item1}/{block.position.y + blockSide.Item2}/{block.position.z + blockSide.Item3}", out Block neighborBlock))
+                        //try
+                        //{
+                        if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
+                        {
+                            if (chunk.subChunks[
+                                level,
+                                i + blockSide.Item1,
+                                j + blockSide.Item2,
+                                k + blockSide.Item3
+                                ].type == BlockType.Air)
+                            {
+                                AddBlockFace(faces, blockSide);
+                            }
+                        }
+                        // only execute this if this method gets called during chunk generation
+                        else 
+                        {
+                            if (j + blockSide.Item2 == -1 && level != 0)
+                            {
+                                if (chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                            else if (j + blockSide.Item2 == size && level != height)
+                            {
+                                if (chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                            // 0: x+  1: x-  2: z+  3: z-
+                            if (i + blockSide.Item1 == size)
+                            {
+                                if (neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                            else if (i + blockSide.Item1 == -1)
+                            {
+                                if (neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                            else if (k + blockSide.Item3 == size)
+                            {
+                                if (neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                            else if (k + blockSide.Item3 == -1)
+                            {
+                                if (neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1].type == BlockType.Air)
+                                {
+                                    AddBlockFace(faces, blockSide);
+                                }
+                            }
+                        }
+                    }
+                    BlockAndItsFaces blockAndItsFaces = new()
+                    {
+                        position = block.position,
+                        blockFaces = faces.ToArray(),
+                        blockType = block.type,
+                    };
+                    subChunkData.Add(blockAndItsFaces);
+                }
+            }
+        }
+        return subChunkData;
     }
 
     public Task StartGenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size)
@@ -170,7 +267,7 @@ public class ThreadedChunkBuilder
         switch (position.y)
         {
             case 0: return true;
-            //case 127: return false;
+                //case 127: return false;
         }
         for (int octave = 0; octave < octaves; octave++)
         {

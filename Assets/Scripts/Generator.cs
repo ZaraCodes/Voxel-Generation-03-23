@@ -76,7 +76,7 @@ public class Generator : MonoBehaviour
     /// <summary>Generated mesh</summary>
     private Mesh mesh;
 
-    private ThreadedChunkBuilder threadedChunkBuilder;
+    public ThreadedChunkBuilder threadedChunkBuilder;
 
     [SerializeField] private bool logPerformance;
 
@@ -479,38 +479,8 @@ public class Generator : MonoBehaviour
         int num = 0;
         foreach (List<BlockAndItsFaces> subChunkBlockData in chunkData)
         {
-            GameObject subChunk = chunk.transform.GetChild(num).gameObject;
-            MeshRenderer meshRenderer = subChunk.AddComponent<MeshRenderer>();
-            MeshFilter meshFilter = subChunk.AddComponent<MeshFilter>();
-            MeshCollider meshCollider = subChunk.AddComponent<MeshCollider>();
-
-            List<int> triangles = new List<int>();
-            List<Vector3> vertices = new List<Vector3>();
-            List<Vector2> uvs = new List<Vector2>();
-
-            int vertIdx = 0;
-            // int loopIdx = 0;
-            foreach (BlockAndItsFaces blockData in subChunkBlockData)
-            {
-                GenerateFace(blockData, triangles, vertices, uvs, ref vertIdx);
-                // if (loopIdx++ % 100 == 0) yield return null;
-            }
-            // Debug.Log(loopIdx);
-
-            mesh = new();
-
-            mesh.Clear();
-            mesh.vertices = vertices.ToArray();
-            mesh.uv = uvs.ToArray();
-            mesh.triangles = triangles.ToArray();
-            mesh.RecalculateNormals();
-
-            meshRenderer.material = mDefaultMaterial;
-            meshFilter.sharedMesh = mesh;
-            meshCollider.sharedMesh = mesh;
-
+            GenerateSubChunk(chunk, num, subChunkBlockData);
             num++;
-            // yield return null;
         }
         if (logPerformance)
         {
@@ -518,6 +488,52 @@ public class Generator : MonoBehaviour
             print($"Chunk {chunk.name} Mesh Creation: {stopwatch1.Elapsed.Milliseconds}");
         }
         callback.Invoke(generatedChunk);
+    }
+
+    public void GenerateSubChunk(Chunk chunk, int level, List<BlockAndItsFaces> subChunkBlockData, bool chunkGeneration = true)
+    {
+        GameObject subChunk = chunk.transform.GetChild(level).gameObject;
+        MeshRenderer meshRenderer;
+        MeshFilter meshFilter;
+        MeshCollider meshCollider;
+
+        if (chunkGeneration)
+        {
+            meshRenderer = subChunk.AddComponent<MeshRenderer>();
+            meshFilter = subChunk.AddComponent<MeshFilter>();
+            meshCollider = subChunk.AddComponent<MeshCollider>();
+        }
+        else
+        {
+            meshRenderer = subChunk.GetComponent<MeshRenderer>();
+            meshFilter = subChunk.GetComponent<MeshFilter>();
+            meshCollider = subChunk.GetComponent<MeshCollider>();
+        }
+
+        List<int> triangles = new List<int>();
+        List<Vector3> vertices = new List<Vector3>();
+        List<Vector2> uvs = new List<Vector2>();
+
+        int vertIdx = 0;
+        // int loopIdx = 0;
+        foreach (BlockAndItsFaces blockData in subChunkBlockData)
+        {
+            GenerateFace(blockData, triangles, vertices, uvs, ref vertIdx);
+            // if (loopIdx++ % 100 == 0) yield return null;
+        }
+        // Debug.Log(loopIdx);
+
+        mesh = new();
+
+        mesh.Clear();
+        mesh.vertices = vertices.ToArray();
+        mesh.uv = uvs.ToArray();
+        mesh.triangles = triangles.ToArray();
+        mesh.RecalculateNormals();
+
+        meshRenderer.material = mDefaultMaterial;
+        meshFilter.sharedMesh = mesh;
+        meshCollider.sharedMesh = mesh;
     }
 }
 

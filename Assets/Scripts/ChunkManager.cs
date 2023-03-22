@@ -19,9 +19,9 @@ public class ChunkManager : MonoBehaviour
     /// <summary>The resolution determines how detailed a chunk mesh will be. The higher the value, the more detailed a chunk is</summary>
     [SerializeField] private int resolution;
 
-    [SerializeField] private int width;
+    public int width;
 
-    [SerializeField] private int chunkHeight;
+    public int chunkHeight;
 
     private bool updatingChunks = false;
 
@@ -85,12 +85,26 @@ public class ChunkManager : MonoBehaviour
         activeChunks = newActiveChunks;
         updatingChunks = false;
     }
+
+    public Vector2Int GetChunkCoordinate(Vector3 position)
+    {
+        return new(Mathf.RoundToInt(position.x / chunkSize), Mathf.RoundToInt(position.z / chunkSize));
+    }
+
+    public GameObject GetChunk(Vector2Int chunkPos)
+    {
+        if (allChunkDic.TryGetValue(chunkPos, out var chunk))
+        {
+            return chunk.chunkObj;
+        }
+        return null;
+    }
     
     /// <summary>Private Chunk class that holds necessary chunk data</summary>
     private class Chunk
     {
         /// <summary>The Chunk GameObject</summary>
-        GameObject chunkObj;
+        public GameObject chunkObj;
 
         /// <summary>Position of the chunk</summary>
         public Vector3 position;

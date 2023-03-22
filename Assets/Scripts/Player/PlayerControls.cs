@@ -9,6 +9,9 @@ public class PlayerControls : MonoBehaviour
     #region References
     public CharacterController CharCtrl;
 
+    [SerializeField] private ChunkManager chunkManager;
+    [SerializeField] private Generator generator;
+
     public Camera PlayerCamera;
     [SerializeField]
     int moveSpeed;
@@ -41,6 +44,47 @@ public class PlayerControls : MonoBehaviour
         {
             Move();
             CameraMove();
+            RaycastThing();
+        }
+    }
+
+    private void RaycastThing()
+    {
+        if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
+        {
+            if (Input.GetMouseButtonDown(0))
+            {
+                //hit.transform.gameObject.name
+                Vector3 blockPos = new(Mathf.Floor(hit.point.x), Mathf.Ceil(hit.point.y), Mathf.Floor(hit.point.z));
+                Debug.Log(blockPos);
+
+                Vector2Int chunkPos = chunkManager.GetChunkCoordinate(blockPos);
+                Debug.Log(chunkPos);
+                GameObject chunkGameObject = chunkManager.GetChunk(chunkPos);
+
+                if (chunkGameObject != null)
+                {
+                    Chunk chunk = chunkGameObject.GetComponent<Chunk>();
+                    if (chunk == null)
+                    {
+                        Debug.Log("Chunk is null verySadge");
+                        return;
+                    }
+                    int level = (int)blockPos.y / 16;
+                    chunk.UpdateBlock(BlockType.Air, level, (int) blockPos.x % 16, (int) blockPos.y % 16, (int) blockPos.z % 16);
+
+
+                    Chunk[] neighborChunks = new Chunk[]
+                    {
+                        chunkManager.GetChunk(new Vector2Int(chunkPos.x + 1, chunkPos.y)).GetComponent<Chunk>(),
+                        chunkManager.GetChunk(new Vector2Int(chunkPos.x - 1, chunkPos.y)).GetComponent<Chunk>(),
+                        chunkManager.GetChunk(new Vector2Int(chunkPos.x, chunkPos.y + 1)).GetComponent<Chunk>(),
+                        chunkManager.GetChunk(new Vector2Int(chunkPos.x, chunkPos.y - 1)).GetComponent<Chunk>()
+                    };
+                    List<BlockAndItsFaces> blockAndItsFaces = generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level, 16, chunkManager.chunkHeight);
+                    generator.GenerateSubChunk(chunk, level, blockAndItsFaces, false);
+                }
+            }
         }
     }
 
