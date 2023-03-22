@@ -1,5 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using UnityEngine;
 
@@ -126,11 +128,6 @@ public class ThreadedChunkBuilder
                     else
                     {
                         b.type = BlockType.Air;
-                        if (y != 0)
-                        {
-                            if (chunk.subChunks[level, x, y - 1, z].type == BlockType.Stone) chunk.subChunks[level, x, y - 1, z].type = BlockType.Grass;
-                            if (y > 1 && chunk.subChunks[level, x, y - 2, z].type == BlockType.Stone) chunk.subChunks[level, x, y - 2, z].type = BlockType.Dirt;
-                        }
                     }
                     chunk.subChunks[level, x, y, z] = b;
                 }
@@ -188,5 +185,64 @@ public class ThreadedChunkBuilder
             return true;
         // if (result > 0)
         return false;
+    }
+
+    public Task StartPopulateChunk(Chunk chunk, int level, int size, int height)
+    {
+        return Task.Run(() => PopulateChunk(chunk, level, size, height));
+    }
+
+    private void PopulateChunk(Chunk chunk, int level, int size, int height)
+    {
+        for (int x = 0; x < size; x++)
+        {
+            for (int y = 0; y < size; y++)
+            {
+                for (int z = 0; z < size; z++)
+                {
+                    Block block = chunk.subChunks[level, x, y, z];
+                    if (block.type == BlockType.Stone)
+                    {
+                        // If the block above this block is air, then this block is grass
+                        AirCheckResult result = AirCheck(chunk, x, y, z, level, height, size, 1, block, BlockType.Grass);
+                        if (result == AirCheckResult.Break) break;
+                        else if (result == AirCheckResult.Continue) continue;
+
+                        // If the block two or three blocks above is air, this block will be dirt
+                        result = AirCheck(chunk, x, y, z, level, height, size, 2, block, BlockType.Dirt);
+                        if (result == AirCheckResult.Break) break;
+                        else if (result == AirCheckResult.Continue) continue;
+
+                        result = AirCheck(chunk, x, y, z, level, height, size, 3, block, BlockType.Dirt);
+                        if (result == AirCheckResult.Break) break;
+                        else if (result == AirCheckResult.Continue) continue;
+                    }
+                }
+            }
+        }
+    }
+    private AirCheckResult AirCheck(Chunk chunk, int x, int y, int z, int levelIdx, int height, int size, int offset, Block block, BlockType replacement)
+    {
+        int ycheck = y + offset;
+        if (ycheck >= size)
+        {
+            levelIdx++;
+            ycheck -= size;
+            if (levelIdx == height) return AirCheckResult.Break;
+        }
+        Block blockToCheck = chunk.subChunks[levelIdx, x, ycheck, z];
+        if (blockToCheck.type == BlockType.Air)
+        {
+            block.type = replacement;
+            return AirCheckResult.Continue;
+        }
+        return AirCheckResult.Default;
+    }
+
+    private enum AirCheckResult
+    {
+        Break,
+        Continue,
+        Default
     }
 }

@@ -447,7 +447,16 @@ public class Generator : MonoBehaviour
             print($"Chunk {chunk.name} Block Generation: {stopwatch1.Elapsed.Milliseconds}");
         }
         yield return null;
-        
+
+        Task[] populationTasks = new Task[height];
+        for (int level = 0; level < height; level++)
+        {
+            populationTasks[level] = threadedChunkBuilder.StartPopulateChunk(chunk, level, size, height);
+        }
+        Task.WaitAll(populationTasks);
+
+        yield return null;
+
         if (logPerformance)
             stopwatch1.Restart();
         List<BlockAndItsFaces>[] chunkData = new List<BlockAndItsFaces>[height];

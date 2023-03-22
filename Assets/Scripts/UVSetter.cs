@@ -34,10 +34,10 @@ public class UVSetter : MonoBehaviour
     private static Vector2[] SetUVs(TileType tileType)
     {
         Vector2[] uvs = new Vector2[4];
-        uvs[0] = tileCoordinates[tileType] + new Vector2(.002f, .998f) / 32f;
-        uvs[1] = tileCoordinates[tileType] + new Vector2(.002f, .002f) / 32f;
-        uvs[2] = tileCoordinates[tileType] + new Vector2(.998f, .002f) / 32f;
-        uvs[3] = tileCoordinates[tileType] + new Vector2(.998f, .998f) / 32f;
+        uvs[0] = tileCoordinates[tileType] + new Vector2(.003f, .997f) / 32f;
+        uvs[1] = tileCoordinates[tileType] + new Vector2(.003f, .003f) / 32f;
+        uvs[2] = tileCoordinates[tileType] + new Vector2(.997f, .003f) / 32f;
+        uvs[3] = tileCoordinates[tileType] + new Vector2(.997f, .997f) / 32f;
         return uvs;
     }
 
