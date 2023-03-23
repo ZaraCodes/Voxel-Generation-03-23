@@ -60,7 +60,10 @@ public class PlayerControls : MonoBehaviour
             Vector3Int blockPos;
             (float, float, float) normal = (hit.normal.x, hit.normal.y, hit.normal.z);
             Vector3 point = new(hit.point.x + 0.0001f, hit.point.y - 0.0001f, hit.point.z + 0.0001f);
-            debugText.text = $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
+
+            if (debugText.gameObject.activeInHierarchy) 
+                debugText.text = $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
+
             switch (normal)
             {
                 case (1, 0, 0):
