@@ -27,6 +27,7 @@ public class PlayerControls : MonoBehaviour
     /// <summary>Defines if the player can move</summary>
     bool movementActive = true;
 
+    [SerializeField] TMPro.TMP_Text debugText;
     #endregion
 
     #region Functions
@@ -58,7 +59,8 @@ public class PlayerControls : MonoBehaviour
         {
             Vector3Int blockPos;
             (float, float, float) normal = (hit.normal.x, hit.normal.y, hit.normal.z);
-            Vector3 point = new(hit.point.x + 0.01f, hit.point.y - 0.01f, hit.point.z + 0.01f);
+            Vector3 point = new(hit.point.x + 0.0001f, hit.point.y - 0.0001f, hit.point.z + 0.0001f);
+            debugText.text = $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
             switch (normal)
             {
                 case (1, 0, 0):
@@ -122,7 +124,7 @@ public class PlayerControls : MonoBehaviour
                     generator.GenerateSubChunk(chunk, level, blockAndItsFaces, false);
                     if (blockPos.y == 0 && level != 0)
                         generator.GenerateSubChunk(chunk, level - 1, generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level - 1, 16, chunkManager.chunkHeight), false);
-                    else if (blockPos.y == 8 && level != 8 - 1)
+                    else if (blockPos.y == 16 - 1 && level != 8 - 1)
                         generator.GenerateSubChunk(chunk, level + 1, generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level + 1, 16, chunkManager.chunkHeight), false);
                     if (blockPos.x == 0)
                         UpdateNeighborChunk(new(chunkPos.x - 1, chunkPos.y), level, neighborChunks, 1);
