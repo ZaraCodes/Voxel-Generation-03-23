@@ -10,7 +10,7 @@ public class Chunk : MonoBehaviour
     {
         if (level < 8 && level >= 0 && x >= 0 && x < 16 && y >= 0 && y < 16 && z >= 0 && z < 16)
         {
-            Debug.Log(subChunks[level, x, y, z].type.ToString());
+            Debug.Log($"{subChunks[level, x, y, z].position} {subChunks[level, x, y, z].type}");
             subChunks[level, x, y, z].type = blockType;
         }
     }
