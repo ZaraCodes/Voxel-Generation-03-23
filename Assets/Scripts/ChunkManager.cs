@@ -88,7 +88,7 @@ public class ChunkManager : MonoBehaviour
 
     public Vector2Int GetChunkCoordinate(Vector3 position)
     {
-        return new(Mathf.RoundToInt(position.x / chunkSize), Mathf.RoundToInt(position.z / chunkSize));
+        return new(Mathf.RoundToInt(position.x / chunkSize + 0.01f), Mathf.RoundToInt(position.z / chunkSize + 0.01f));
     }
 
     public GameObject GetChunk(Vector2Int chunkPos)

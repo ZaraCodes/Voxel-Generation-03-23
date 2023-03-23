@@ -36,8 +36,8 @@ public class PlayerControls : MonoBehaviour
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
 
-        Debug.Log($"Round {2.5f} to {Mathf.RoundToInt(2.5f)}");
-        Debug.Log($"Round {1.5f} to {Mathf.RoundToInt(1.5f)}");
+        // Debug.Log($"Round {40f / 16f + 0.01f} to {Mathf.RoundToInt(40f / 16f + 0.01f)}");
+        // Debug.Log($"Round {24f / 16f + 0.01f} to {Mathf.RoundToInt(24f / 16f + 0.01f)}");
 
     }
 
@@ -56,7 +56,24 @@ public class PlayerControls : MonoBehaviour
     {
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
         {
-            Vector3Int blockPos = new(Mathf.FloorToInt(hit.point.x), Mathf.CeilToInt(hit.point.y), Mathf.FloorToInt(hit.point.z));
+            Vector3Int blockPos;
+            (float, float, float) normal = (hit.normal.x, hit.normal.y, hit.normal.z);
+            Vector3 point = new(hit.point.x + 0.01f, hit.point.y - 0.01f, hit.point.z + 0.01f);
+            switch (normal)
+            {
+                case (1, 0, 0):
+                    blockPos = new(Mathf.FloorToInt(point.x - 1), Mathf.CeilToInt(point.y), Mathf.FloorToInt(point.z));
+                    break;
+                case (0, -1, 0):
+                    blockPos = new(Mathf.FloorToInt(point.x), Mathf.CeilToInt(point.y + 1), Mathf.FloorToInt(point.z));
+                    break;
+                case (0, 0, 1):
+                    blockPos = new(Mathf.FloorToInt(point.x), Mathf.CeilToInt(point.y), Mathf.FloorToInt(point.z - 1));
+                    break;
+                default:
+                    blockPos = new(Mathf.FloorToInt(point.x), Mathf.CeilToInt(point.y), Mathf.FloorToInt(point.z));
+                    break;
+            }
 
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);
             Debug.DrawLine(blockPos, blockPos + Vector3.right);
@@ -103,6 +120,10 @@ public class PlayerControls : MonoBehaviour
                     };
                     List<BlockAndItsFaces> blockAndItsFaces = generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level, 16, chunkManager.chunkHeight);
                     generator.GenerateSubChunk(chunk, level, blockAndItsFaces, false);
+                    if (blockPos.y == 0 && level != 0)
+                        generator.GenerateSubChunk(chunk, level - 1, generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level - 1, 16, chunkManager.chunkHeight), false);
+                    else if (blockPos.y == 8 && level != 8 - 1)
+                        generator.GenerateSubChunk(chunk, level + 1, generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level + 1, 16, chunkManager.chunkHeight), false);
                     if (blockPos.x == 0)
                         UpdateNeighborChunk(new(chunkPos.x - 1, chunkPos.y), level, neighborChunks, 1);
                     else if (blockPos.x == 16 - 1)
