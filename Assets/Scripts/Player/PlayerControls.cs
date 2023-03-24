@@ -108,7 +108,7 @@ public class PlayerControls : MonoBehaviour
                         blockPos.z -= 1; break;
                 }
                 Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
-                SubChunk.AddBlockAt(blockPos, BlockType.Dirt, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
+                SubChunk.AddBlockAt(blockPos, BlockType.WoodPlanks, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
             }
         }
     }
