@@ -4,8 +4,23 @@ using UnityEngine;
 
 public class ChunkManager : MonoBehaviour
 {
+    private static ChunkManager instance;
+    public static ChunkManager Instance
+    {
+        get
+        {
+            if (instance == null)
+            {
+                instance = GameObject.Find("ChunkManager").GetComponent<ChunkManager>();
+            }
+            return instance;
+        }
+    }
+
     /// <summary>Reference to the generator</summary>
     [SerializeField] private Generator generator;
+
+    public Generator Generator { get { return generator; } }
 
     /// <summary>Reference to the viewer transform which is used to determine the active chunks</summary>
     [SerializeField] private Transform viewerTransform;

@@ -410,9 +410,11 @@ public class Generator : MonoBehaviour
         GameObject generatedChunk = new();
         generatedChunk.transform.parent = parent;
         generatedChunk.transform.position = rootPos;
-        generatedChunk.name = $"{rootPos.x / size}/{rootPos.z / size}";
+       
         Chunk chunk = generatedChunk.AddComponent<Chunk>();
         chunk.subChunks = new Block[height, size, size, size];
+        chunk.ChunkPos = new((int) rootPos.x / size, (int) rootPos.z / size);
+        generatedChunk.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y}";
 
         Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
 
@@ -499,9 +501,13 @@ public class Generator : MonoBehaviour
 
         if (chunkGeneration)
         {
+            SubChunk sub;
+            
             meshRenderer = subChunk.AddComponent<MeshRenderer>();
             meshFilter = subChunk.AddComponent<MeshFilter>();
             meshCollider = subChunk.AddComponent<MeshCollider>();
+            sub = subChunk.AddComponent<SubChunk>();
+            sub.chunk = chunk;
         }
         else
         {
