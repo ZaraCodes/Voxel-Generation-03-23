@@ -61,7 +61,7 @@ public class PlayerControls : MonoBehaviour
             (float, float, float) normal = (hit.normal.x, hit.normal.y, hit.normal.z);
             Vector3 point = new(hit.point.x + 0.0001f, hit.point.y - 0.0001f, hit.point.z + 0.0001f);
 
-            if (debugText.gameObject.activeInHierarchy) 
+            if (debugText.gameObject.activeInHierarchy)
                 debugText.text = $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
 
             switch (normal)
@@ -88,7 +88,27 @@ public class PlayerControls : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                targetSubChunk.UpdateSubChunk(blockPos);
+                targetSubChunk.RemoveBlockAt(blockPos);
+            }
+            else if (Input.GetMouseButtonDown(1))
+            {
+                switch (normal)
+                {
+                    case (1, 0, 0):
+                        blockPos.x += 1; break;
+                    case (-1, 0, 0):
+                        blockPos.x -= 1; break;
+                    case (0, 1, 0):
+                        blockPos.y += 1; break;
+                    case (0, -1, 0):
+                        blockPos.y -= 1; break;
+                    case (0, 0, 1):
+                        blockPos.z += 1; break;
+                    case (0, 0, -1):
+                        blockPos.z -= 1; break;
+                }
+                Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
+                SubChunk.AddBlockAt(blockPos, BlockType.Dirt, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
             }
         }
     }

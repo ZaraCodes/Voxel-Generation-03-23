@@ -507,7 +507,7 @@ public class Generator : MonoBehaviour
             meshFilter = subChunk.AddComponent<MeshFilter>();
             meshCollider = subChunk.AddComponent<MeshCollider>();
             sub = subChunk.AddComponent<SubChunk>();
-            sub.chunk = chunk;
+            sub.Chunk = chunk;
         }
         else
         {
