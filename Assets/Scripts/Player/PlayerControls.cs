@@ -36,7 +36,8 @@ public class PlayerControls : MonoBehaviour
         // removes the cursor while playing and locks its position
         Cursor.visible = false;
         Cursor.lockState = CursorLockMode.Locked;
-
+        Application.targetFrameRate = -1;
+        QualitySettings.vSyncCount = 0;
         // Debug.Log($"Round {40f / 16f + 0.01f} to {Mathf.RoundToInt(40f / 16f + 0.01f)}");
         // Debug.Log($"Round {24f / 16f + 0.01f} to {Mathf.RoundToInt(24f / 16f + 0.01f)}");
 
@@ -55,6 +56,7 @@ public class PlayerControls : MonoBehaviour
 
     private void RaycastThing()
     {
+        debugText.text = $"FPS: {(int)(1 / Time.deltaTime)}\n";
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
         {
             Vector3Int blockPos;
@@ -62,7 +64,7 @@ public class PlayerControls : MonoBehaviour
             Vector3 point = new(hit.point.x + 0.0001f, hit.point.y - 0.0001f, hit.point.z + 0.0001f);
 
             if (debugText.gameObject.activeInHierarchy)
-                debugText.text = $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
+                debugText.text += $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
 
             switch (normal)
             {
@@ -146,9 +148,9 @@ public class PlayerControls : MonoBehaviour
     /// </summary>
     void CameraMove()
     {
-        transform.Rotate(Input.GetAxis("Mouse X") * rotationSpeed * Time.deltaTime * Vector3.up);
+        transform.Rotate(Input.GetAxis("Mouse X") * rotationSpeed * Vector3.up);
 
-        pitch += -Input.GetAxis("Mouse Y") * Time.deltaTime * rotationSpeed;
+        pitch += -Input.GetAxis("Mouse Y") * rotationSpeed;
         pitch = Mathf.Clamp(pitch, pitchMinMax.x, pitchMinMax.y);
         PlayerCamera.transform.localEulerAngles = new Vector3(pitch, 0, 0);
     }
@@ -158,11 +160,6 @@ public class PlayerControls : MonoBehaviour
     public void SetMovementActive(bool active)
     {
         movementActive = active;
-    }
-
-    public void LoadHappyEnd()
-    {
-        // SceneManager.LoadScene("Happy End");
     }
     #endregion
 }

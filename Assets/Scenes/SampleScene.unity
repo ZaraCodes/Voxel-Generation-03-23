@@ -496,7 +496,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1069238890
 RectTransform:
   m_ObjectHideFlags: 0
@@ -710,7 +710,7 @@ MonoBehaviour:
   chunkSize: 16
   resolution: 2
   width: 16
-  chunkHeight: 8
+  chunkHeight: 16
 --- !u!4 &1340725600
 Transform:
   m_ObjectHideFlags: 0
@@ -863,5 +863,5 @@ MonoBehaviour:
   generator: {fileID: 1082325506}
   PlayerCamera: {fileID: 963194227}
   moveSpeed: 4
-  rotationSpeed: 150
+  rotationSpeed: 1
   debugText: {fileID: 1069238891}

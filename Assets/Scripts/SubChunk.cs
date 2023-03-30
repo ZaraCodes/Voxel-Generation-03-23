@@ -1,4 +1,3 @@
-using Palmmedia.ReportGenerator.Core;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -14,13 +13,13 @@ public class SubChunk : MonoBehaviour
     {
         Vector2Int chunkPos = Chunk.ChunkPos;
 
-        int level = blockPos.y / 16;
+        int level = blockPos.y / ChunkManager.Instance.width;
 
-        blockPos = new(blockPos.x % 16, blockPos.y % 16, blockPos.z % 16);
-        blockPos += new Vector3Int(8, 0, 8);
-        if (blockPos.x < 0) blockPos.x += 16;
-        if (blockPos.z < 0) blockPos.z += 16;
-        blockPos = new(blockPos.x % 16, blockPos.y % 16, blockPos.z % 16);
+        blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
+        blockPos += new Vector3Int(ChunkManager.Instance.width / 2, 0, ChunkManager.Instance.width / 2);
+        if (blockPos.x < 0) blockPos.x += ChunkManager.Instance.width;
+        if (blockPos.z < 0) blockPos.z += ChunkManager.Instance.width;
+        blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
 
         Chunk.UpdateBlock(BlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
 
@@ -32,21 +31,21 @@ public class SubChunk : MonoBehaviour
             ChunkManager.Instance.GetChunk(new Vector2Int(chunkPos.x, chunkPos.y - 1)).GetComponent<Chunk>()
         };
 
-        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level, 16, ChunkManager.Instance.chunkHeight);
+        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight);
         ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level, blockAndItsFaces, false);
 
         if (blockPos.y == 0 && level != 0)
-            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level - 1, 16, ChunkManager.Instance.chunkHeight), false);
-        else if (blockPos.y == 16 - 1 && level != 8 - 1)
-            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level + 1, 16, ChunkManager.Instance.chunkHeight), false);
+            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level - 1, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight), false);
+        else if (blockPos.y == ChunkManager.Instance.width - 1 && level != ChunkManager.Instance.chunkHeight - 1)
+            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level + 1, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight), false);
 
         if (blockPos.x == 0)
             UpdateNeighborChunk(new(chunkPos.x - 1, chunkPos.y), level, neighborChunks, 1);
-        else if (blockPos.x == 16 - 1)
+        else if (blockPos.x == ChunkManager.Instance.width - 1)
             UpdateNeighborChunk(new(chunkPos.x + 1, chunkPos.y), level, neighborChunks, 0);
         if (blockPos.z == 0)
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y - 1), level, neighborChunks, 3);
-        else if (blockPos.z == 16 - 1)
+        else if (blockPos.z == ChunkManager.Instance.width - 1)
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y + 1), level, neighborChunks, 2);
 
     }
@@ -62,7 +61,7 @@ public class SubChunk : MonoBehaviour
             ChunkManager.Instance.GetChunk(new Vector2Int(neighborChunkPos.x, neighborChunkPos.y + 1)).GetComponent<Chunk>(),
             ChunkManager.Instance.GetChunk(new Vector2Int(neighborChunkPos.x, neighborChunkPos.y - 1)).GetComponent<Chunk>()
         };
-        blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(neighborChunk, newNeighborChunks, level, 16, ChunkManager.Instance.chunkHeight);
+        blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(neighborChunk, newNeighborChunks, level, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight);
         ChunkManager.Instance.Generator.GenerateSubChunk(neighborChunk, level, blockAndItsFaces, false);
     }
 
@@ -70,13 +69,13 @@ public class SubChunk : MonoBehaviour
     {
         Vector2Int chunkPos = chunk.ChunkPos;
 
-        int level = blockPos.y / 16;
+        int level = blockPos.y / ChunkManager.Instance.width;
 
-        blockPos = new(blockPos.x % 16, blockPos.y % 16, blockPos.z % 16);
-        blockPos += new Vector3Int(8, 0, 8);
-        if (blockPos.x < 0) blockPos.x += 16;
-        if (blockPos.z < 0) blockPos.z += 16;
-        blockPos = new(blockPos.x % 16, blockPos.y % 16, blockPos.z % 16);
+        blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
+        blockPos += new Vector3Int(ChunkManager.Instance.width / 2, 0, ChunkManager.Instance.width / 2);
+        if (blockPos.x < 0) blockPos.x += ChunkManager.Instance.width;
+        if (blockPos.z < 0) blockPos.z += ChunkManager.Instance.width;
+        blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
 
         chunk.UpdateBlock(blockType, level, blockPos.x, blockPos.y, blockPos.z);
 
@@ -88,21 +87,21 @@ public class SubChunk : MonoBehaviour
             ChunkManager.Instance.GetChunk(new Vector2Int(chunkPos.x, chunkPos.y - 1)).GetComponent<Chunk>()
         };
 
-        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level, 16, ChunkManager.Instance.chunkHeight);
+        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight);
         ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level, blockAndItsFaces, false);
 
         if (blockPos.y == 0 && level != 0)
-            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level - 1, 16, ChunkManager.Instance.chunkHeight), false);
-        else if (blockPos.y == 16 - 1 && level != 8 - 1)
-            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level + 1, 16, ChunkManager.Instance.chunkHeight), false);
+            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level - 1, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight), false);
+        else if (blockPos.y == ChunkManager.Instance.width - 1 && level != ChunkManager.Instance.chunkHeight - 1)
+            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level + 1, ChunkManager.Instance.width, ChunkManager.Instance.chunkHeight), false);
 
         if (blockPos.x == 0)
             UpdateNeighborChunk(new(chunkPos.x - 1, chunkPos.y), level, neighborChunks, 1);
-        else if (blockPos.x == 16 - 1)
+        else if (blockPos.x == ChunkManager.Instance.width - 1)
             UpdateNeighborChunk(new(chunkPos.x + 1, chunkPos.y), level, neighborChunks, 0);
         if (blockPos.z == 0)
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y - 1), level, neighborChunks, 3);
-        else if (blockPos.z == 16 - 1)
+        else if (blockPos.z == ChunkManager.Instance.width - 1)
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y + 1), level, neighborChunks, 2);
     }
 }
