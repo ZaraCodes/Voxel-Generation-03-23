@@ -49,6 +49,8 @@ public class ChunkManager : MonoBehaviour
     /// <summary>The position of the viewer transform</summary>
     private Vector2 ViewerPos => new (viewerTransform.position.x, viewerTransform.position.z);
 
+    Vector2Int[] viewArea;
+
     /// <summary>Updates the visible chunks each frame</summary>
     private IEnumerator UpdateChunks()
     {
@@ -60,11 +62,9 @@ public class ChunkManager : MonoBehaviour
             Mathf.RoundToInt(currViewerPos.x),
             Mathf.RoundToInt(currViewerPos.y));
 
-        for (int y = -renderDistance; y <= renderDistance; y++)
+        foreach (Vector2Int pos in viewArea)
         {
-            for (int x = -renderDistance; x <= renderDistance; x++)
-            {
-                Vector2Int currChunkCoord = currentViewerChunkCoord + new Vector2Int(x, y);
+                Vector2Int currChunkCoord = currentViewerChunkCoord + pos;
 
                 if (activeChunks.Contains(currChunkCoord))
                 {
@@ -91,7 +91,7 @@ public class ChunkManager : MonoBehaviour
                     else allChunkDic[currChunkCoord].SetVisibility(true);
                 }
                 newActiveChunks.Add(currChunkCoord);
-            }
+            
         }
         foreach (Vector2Int chunkInx in activeChunks)
         {
@@ -113,6 +113,45 @@ public class ChunkManager : MonoBehaviour
             return chunk.chunkObj;
         }
         return null;
+    }
+
+    private void SetViewArea()
+    {
+        Vector2Int lastAdded = new();
+        List<Vector2Int> meow = new()
+        {
+            lastAdded
+        };
+
+        for (int i = 1; i < renderDistance + 1; i++)
+        {
+            int currWidth = i * 2 + 1;
+
+            lastAdded = new(lastAdded.x + 1, lastAdded.y);
+            meow.Add(lastAdded);
+            
+            for (int j = 0; j < currWidth - 2; j++)
+            {
+                lastAdded.y += 1;
+                meow.Add(lastAdded);
+            }
+            for (int j = 0; j < currWidth - 1; j++)
+            {
+                lastAdded.x -= 1;
+                meow.Add(lastAdded);
+            }
+            for (int j = 0; j < currWidth - 1; j++)
+            {
+                lastAdded.y -= 1;
+                meow.Add(lastAdded);
+            }
+            for (int j = 0; j < currWidth - 1; j++)
+            {
+                lastAdded.x += 1;
+                meow.Add(lastAdded);
+            }
+        }
+        viewArea = meow.ToArray();
     }
     
     /// <summary>Private Chunk class that holds necessary chunk data</summary>
@@ -145,6 +184,7 @@ public class ChunkManager : MonoBehaviour
     {
         allChunkDic = new Dictionary<Vector2Int, Chunk>();
         activeChunks = new List<Vector2Int>();
+        SetViewArea();
         // generator.GenerateChunk(new(0, 0, 0), transform);
     }
 

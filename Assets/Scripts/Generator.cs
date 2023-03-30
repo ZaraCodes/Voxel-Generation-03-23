@@ -442,7 +442,8 @@ public class Generator : MonoBehaviour
         {
             blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, rootPos, cornerPos, level, size);
         }
-        Task.WaitAll(blockDataTasks);
+        yield return WaitForTasks(blockDataTasks);
+        // Task.WaitAll(blockDataTasks);
         if (logPerformance)
         {
             stopwatch1.Stop();
@@ -455,7 +456,8 @@ public class Generator : MonoBehaviour
         {
             populationTasks[level] = threadedChunkBuilder.StartPopulateChunk(chunk, level, size, height);
         }
-        Task.WaitAll(populationTasks);
+        yield return WaitForTasks(populationTasks);
+        // Task.WaitAll(populationTasks);
 
         yield return null;
 
@@ -467,7 +469,8 @@ public class Generator : MonoBehaviour
         {
             blockSidesTasks[level] = threadedChunkBuilder.StartBuildBlockSides(chunk, chunkData, level, size, height);
         }
-        Task.WaitAll(blockSidesTasks);
+        yield return WaitForTasks(blockSidesTasks);
+        // Task.WaitAll(blockSidesTasks);
         if (logPerformance)
         {
             stopwatch1.Stop();
@@ -540,6 +543,22 @@ public class Generator : MonoBehaviour
         meshRenderer.material = mDefaultMaterial;
         meshFilter.sharedMesh = mesh;
         meshCollider.sharedMesh = mesh;
+    }
+
+    private IEnumerator WaitForTasks(Task[] tasks)
+    {
+        while (true)
+        {
+            bool continueWait = false;
+            foreach (Task task in tasks)
+                if (!task.IsCompleted)
+                {
+                    continueWait = true;
+                    yield return null;
+                    break;
+                }
+            if (!continueWait) break;
+        }
     }
 }
 
