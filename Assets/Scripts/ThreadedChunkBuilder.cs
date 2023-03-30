@@ -48,17 +48,17 @@ public class ThreadedChunkBuilder
 
                     foreach ((int, int, int) blockSide in blockSides)
                     {
-                        if (block.position.y + blockSide.Item2 < 0)
+                        if (block.position.y + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        else if (block.position.y + blockSide.Item2 >= size * height)
+                        else if (block.position.y + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        int lookupY = ((int)block.position.y + blockSide.Item2) / size;
+                        int lookupY = ((int)block.position.y + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
@@ -115,17 +115,17 @@ public class ThreadedChunkBuilder
 
                     foreach ((int, int, int) blockSide in blockSides)
                     {
-                        if (block.position.y + blockSide.Item2 < 0)
+                        if (block.position.y + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        else if (block.position.y + blockSide.Item2 >= size * height)
+                        else if (block.position.y + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        int lookupY = ((int)block.position.y + blockSide.Item2) / size;
+                        int lookupY = ((int)block.position.y + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
@@ -205,12 +205,12 @@ public class ThreadedChunkBuilder
         return subChunkData;
     }
 
-    public Task StartGenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size)
+    public Task StartGenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size, int yOffset)
     {
-        return Task.Run(() => { GenerateBlockData(chunk, rootPos, cornerPos, level, size); });
+        return Task.Run(() => { GenerateBlockData(chunk, rootPos, cornerPos, level, size, yOffset); });
     }
 
-    private void GenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size)
+    private void GenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size, int yOffset)
     {
         // (int)(rootPos.x + cornerPos.x + size)
         for (int x = 0; x < size; x++)
@@ -220,7 +220,8 @@ public class ThreadedChunkBuilder
                 for (int z = 0; z < size; z++)
                 {
                     Block b = new();
-                    b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, level * size + y, (int)(rootPos.z + cornerPos.z) + z);
+                    // Debug.Log($"{level} {x} {y} {z}");
+                    b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, (level - yOffset) * size + y, (int)(rootPos.z + cornerPos.z) + z);
                     if (Evaluate3DNoise(b.position)) b.type = BlockType.Stone;
                     else
                     {
@@ -264,11 +265,6 @@ public class ThreadedChunkBuilder
         float noise = 0f;
         float divisor = 0f;
 
-        switch (position.y)
-        {
-            case 0: return true;
-                //case 127: return false;
-        }
         for (int octave = 0; octave < octaves; octave++)
         {
             noise += baseNoise.Evaluate(position * Mathf.Pow(lacunarity, octave) * frequency / 3) * Mathf.Pow(persistence, octave);
@@ -278,7 +274,7 @@ public class ThreadedChunkBuilder
 
         // float result = baseNoise.Evaluate(position * 0.0625f / 3);
         //if (position.y < 52) return true;
-        if (-3.5 + position.y / 25f < noise)
+        if (position.y / 25f < noise)
             return true;
         // if (result > 0)
         return false;

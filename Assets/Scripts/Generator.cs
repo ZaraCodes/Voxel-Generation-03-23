@@ -440,7 +440,7 @@ public class Generator : MonoBehaviour
         Task[] blockDataTasks = new Task[height];
         for (int level = 0; level < height; level++)
         {
-            blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, rootPos, cornerPos, level, size);
+            blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, rootPos, cornerPos, level, size, ChunkManager.Instance.chunkOffsetY);
         }
         yield return WaitForTasks(blockDataTasks);
         // Task.WaitAll(blockDataTasks);
@@ -449,7 +449,6 @@ public class Generator : MonoBehaviour
             stopwatch1.Stop();
             print($"Chunk {chunk.name} Block Generation: {stopwatch1.Elapsed.Milliseconds}");
         }
-        yield return null;
 
         Task[] populationTasks = new Task[height];
         for (int level = 0; level < height; level++)
@@ -459,7 +458,6 @@ public class Generator : MonoBehaviour
         yield return WaitForTasks(populationTasks);
         // Task.WaitAll(populationTasks);
 
-        yield return null;
 
         if (logPerformance)
             stopwatch1.Restart();
@@ -476,7 +474,6 @@ public class Generator : MonoBehaviour
             stopwatch1.Stop();
             print($"Chunk {chunk.name} Face Finding: {stopwatch1.Elapsed.Milliseconds}");
         }
-        yield return null;
 
         if (logPerformance)
             stopwatch1.Restart();

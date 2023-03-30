@@ -13,12 +13,17 @@ public class SubChunk : MonoBehaviour
     {
         Vector2Int chunkPos = Chunk.ChunkPos;
 
-        int level = blockPos.y / ChunkManager.Instance.width;
-
+        int level = (blockPos.y / ChunkManager.Instance.width) + ChunkManager.Instance.chunkOffsetY;
+        
         blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
         blockPos += new Vector3Int(ChunkManager.Instance.width / 2, 0, ChunkManager.Instance.width / 2);
         if (blockPos.x < 0) blockPos.x += ChunkManager.Instance.width;
         if (blockPos.z < 0) blockPos.z += ChunkManager.Instance.width;
+        if (blockPos.y < 0)
+        {
+            blockPos.y += ChunkManager.Instance.width;
+            level -= 1;
+        }
         blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
 
         Chunk.UpdateBlock(BlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
@@ -69,12 +74,17 @@ public class SubChunk : MonoBehaviour
     {
         Vector2Int chunkPos = chunk.ChunkPos;
 
-        int level = blockPos.y / ChunkManager.Instance.width;
+        int level = (blockPos.y / ChunkManager.Instance.width) + ChunkManager.Instance.chunkOffsetY;
 
         blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
         blockPos += new Vector3Int(ChunkManager.Instance.width / 2, 0, ChunkManager.Instance.width / 2);
         if (blockPos.x < 0) blockPos.x += ChunkManager.Instance.width;
         if (blockPos.z < 0) blockPos.z += ChunkManager.Instance.width;
+        if (blockPos.y < 0)
+        {
+            blockPos.y += ChunkManager.Instance.width;
+            level -= 1;
+        }
         blockPos = new(blockPos.x % ChunkManager.Instance.width, blockPos.y % ChunkManager.Instance.width, blockPos.z % ChunkManager.Instance.width);
 
         chunk.UpdateBlock(blockType, level, blockPos.x, blockPos.y, blockPos.z);

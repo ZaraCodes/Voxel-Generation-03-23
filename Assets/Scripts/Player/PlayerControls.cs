@@ -86,7 +86,6 @@ public class PlayerControls : MonoBehaviour
             Debug.DrawLine(blockPos, blockPos + Vector3.right);
             Debug.DrawLine(blockPos, blockPos + Vector3.down);
 
-
             if (Input.GetMouseButtonDown(0))
             {
                 SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();

@@ -709,6 +709,7 @@ MonoBehaviour:
   renderDistance: 8
   chunkSize: 16
   resolution: 2
+  chunkOffsetY: 8
   width: 16
   chunkHeight: 16
 --- !u!4 &1340725600

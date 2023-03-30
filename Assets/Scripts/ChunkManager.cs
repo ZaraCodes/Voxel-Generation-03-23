@@ -34,6 +34,8 @@ public class ChunkManager : MonoBehaviour
     /// <summary>The resolution determines how detailed a chunk mesh will be. The higher the value, the more detailed a chunk is</summary>
     [SerializeField] private int resolution;
 
+    public int chunkOffsetY;
+
     public int width;
 
     public int chunkHeight;
