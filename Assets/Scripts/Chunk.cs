@@ -16,4 +16,13 @@ public class Chunk : MonoBehaviour
             subChunks[level, x, y, z].type = blockType;
         }
     }
+
+    public Block GetBlock(int level, int x, int y, int z)
+    {
+        if (level < ChunkManager.Instance.chunkHeight && level >= 0 && x >= 0 && x < ChunkManager.Instance.width && y >= 0 && y < ChunkManager.Instance.width && z >= 0 && z < ChunkManager.Instance.width)
+        {
+            return subChunks[level, x, y, z];
+        }
+        return null;
+    }
 }

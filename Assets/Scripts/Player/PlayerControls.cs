@@ -1,8 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEngine.UI;
+using TMPro;
+using System;
 
 public class PlayerControls : MonoBehaviour
 {
@@ -27,7 +25,7 @@ public class PlayerControls : MonoBehaviour
     /// <summary>Defines if the player can move</summary>
     bool movementActive = true;
 
-    [SerializeField] TMPro.TMP_Text debugText;
+    [SerializeField] TMP_Text debugText;
     #endregion
 
     #region Functions
@@ -57,14 +55,12 @@ public class PlayerControls : MonoBehaviour
     private void RaycastThing()
     {
         debugText.text = $"FPS: {(int)(1 / Time.deltaTime)}\n";
+        debugText.text += $"X: {Math.Round(transform.position.x, 4).ToString().PadRight(6, '0')}\tY: {Math.Round(transform.position.y, 4).ToString().PadRight(6, '0')}\tZ: {Math.Round(transform.position.z, 4).ToString().PadRight(6, '0')}\n";
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
         {
             Vector3Int blockPos;
             (float, float, float) normal = (hit.normal.x, hit.normal.y, hit.normal.z);
             Vector3 point = new(hit.point.x + 0.0001f, hit.point.y - 0.0001f, hit.point.z + 0.0001f);
-
-            if (debugText.gameObject.activeInHierarchy)
-                debugText.text += $"X:{point.x}\nY:{point.y}\nZ:{point.z}";
 
             switch (normal)
             {
@@ -82,6 +78,13 @@ public class PlayerControls : MonoBehaviour
                     break;
             }
 
+            if (debugText.gameObject.activeInHierarchy)
+            {
+                debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
+                SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
+                debugText.text += $"{targetSubChunk.GetBlock(blockPos).type}\n";
+                
+            }
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);
             Debug.DrawLine(blockPos, blockPos + Vector3.right);
             Debug.DrawLine(blockPos, blockPos + Vector3.down);
