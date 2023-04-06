@@ -25,7 +25,9 @@ public class PlayerControls : MonoBehaviour
     /// <summary>Defines if the player can move</summary>
     bool movementActive = true;
 
-    [SerializeField] TMP_Text debugText;
+    [SerializeField] private TMP_Text debugText;
+
+    [SerializeField] private SelectedCubeLineDrawer cubeDrawer;
     #endregion
 
     #region Functions
@@ -83,8 +85,8 @@ public class PlayerControls : MonoBehaviour
                 debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
                 SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
                 debugText.text += $"{targetSubChunk.GetBlock(blockPos).type}\n";
-                
             }
+            cubeDrawer.CubePosition = blockPos;
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);
             Debug.DrawLine(blockPos, blockPos + Vector3.right);
             Debug.DrawLine(blockPos, blockPos + Vector3.down);
@@ -114,6 +116,10 @@ public class PlayerControls : MonoBehaviour
                 Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
                 SubChunk.AddBlockAt(blockPos, BlockType.WoodPlanks, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
             }
+        }
+        else if (cubeDrawer.CubeEnabled)
+        {
+            cubeDrawer.CubeEnabled = false;
         }
     }
 

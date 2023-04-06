@@ -6,6 +6,7 @@ public class PauseMenu : MonoBehaviour
 {
     [SerializeField] private GameObject menuObject;
     [SerializeField] private PlayerControls player;
+    [SerializeField] private GameObject settingsMenu;
 
     private void Update()
     {
@@ -38,6 +39,12 @@ public class PauseMenu : MonoBehaviour
         Cursor.lockState = CursorLockMode.Locked;
         player.SetMovementActive(true);
         Time.timeScale = 1.0f;
+    }
+
+    public void ShowSettingsMenu()
+    {
+        settingsMenu.SetActive(true);
+        gameObject.SetActive(false);
     }
 
     public void QuitGame()

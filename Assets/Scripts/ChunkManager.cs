@@ -51,9 +51,7 @@ public class ChunkManager : MonoBehaviour
     /// <summary>The position of the viewer transform</summary>
     private Vector2 ViewerPos => new (viewerTransform.position.x, viewerTransform.position.z);
 
-    Vector2Int[] viewArea;
-
-    /// <summary>Updates the visible chunks each frame</summary>
+      /// <summary>Updates the visible chunks each frame</summary>
     private IEnumerator UpdateChunks()
     {
         updatingChunks = true;
@@ -64,7 +62,7 @@ public class ChunkManager : MonoBehaviour
             Mathf.RoundToInt(currViewerPos.x),
             Mathf.RoundToInt(currViewerPos.y));
 
-        foreach (Vector2Int pos in viewArea)
+        foreach (Vector2Int pos in SettingsManager.Instance.ViewArea)
         {
                 Vector2Int currChunkCoord = currentViewerChunkCoord + pos;
 
@@ -116,45 +114,6 @@ public class ChunkManager : MonoBehaviour
         }
         return null;
     }
-
-    private void SetViewArea()
-    {
-        Vector2Int lastAdded = new();
-        List<Vector2Int> meow = new()
-        {
-            lastAdded
-        };
-
-        for (int i = 1; i < renderDistance + 1; i++)
-        {
-            int currWidth = i * 2 + 1;
-
-            lastAdded = new(lastAdded.x + 1, lastAdded.y);
-            meow.Add(lastAdded);
-            
-            for (int j = 0; j < currWidth - 2; j++)
-            {
-                lastAdded.y += 1;
-                meow.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.x -= 1;
-                meow.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.y -= 1;
-                meow.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.x += 1;
-                meow.Add(lastAdded);
-            }
-        }
-        viewArea = meow.ToArray();
-    }
     
     /// <summary>Private Chunk class that holds necessary chunk data</summary>
     private class Chunk
@@ -186,7 +145,7 @@ public class ChunkManager : MonoBehaviour
     {
         allChunkDic = new Dictionary<Vector2Int, Chunk>();
         activeChunks = new List<Vector2Int>();
-        SetViewArea();
+        SettingsManager.Instance.ViewDistance = renderDistance;
         // generator.GenerateChunk(new(0, 0, 0), transform);
     }
 
