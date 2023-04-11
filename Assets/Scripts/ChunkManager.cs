@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 
 public class ChunkManager : MonoBehaviour
@@ -43,15 +44,21 @@ public class ChunkManager : MonoBehaviour
     private bool updatingChunks = false;
 
     /// <summary>Dictionary of all the generated chunks</summary>
-    private Dictionary<Vector2Int, Chunk> allChunkDic;
+    private Dictionary<Vector2Int, ChunkPrivate> allChunkDic;
 
     /// <summary>This list keeps track of all active and visible chunks</summary>
     private List<Vector2Int> activeChunks;
 
     /// <summary>The position of the viewer transform</summary>
-    private Vector2 ViewerPos => new (viewerTransform.position.x, viewerTransform.position.z);
+    private Vector2 ViewerPos => new(viewerTransform.position.x, viewerTransform.position.z);
 
-      /// <summary>Updates the visible chunks each frame</summary>
+    [SerializeField] private RectTransform loadingBar;
+
+    [SerializeField] private TMP_Text loadingText;
+
+    [SerializeField] private GameObject loadingScreen;
+
+    /// <summary>Updates the visible chunks each frame</summary>
     private IEnumerator UpdateChunks()
     {
         updatingChunks = true;
@@ -64,34 +71,32 @@ public class ChunkManager : MonoBehaviour
 
         foreach (Vector2Int pos in SettingsManager.Instance.ViewArea)
         {
-                Vector2Int currChunkCoord = currentViewerChunkCoord + pos;
+            Vector2Int currChunkCoord = currentViewerChunkCoord + pos;
 
-                if (activeChunks.Contains(currChunkCoord))
+            if (activeChunks.Contains(currChunkCoord))
+            {
+                /*Wir wissen:
+                 *- er ist an
+                 *- er ist generiert
+                 */
+                activeChunks.Remove(currChunkCoord);
+            }
+            else
+            {
+                if (!allChunkDic.ContainsKey(currChunkCoord))
                 {
-                    /*Wir wissen:
-                     *- er ist an
-                     *- er ist generiert
-                     */
-                    activeChunks.Remove(currChunkCoord);
-                }
-                else
-                {
-                    if (!allChunkDic.ContainsKey(currChunkCoord))
+                    Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
+                    // GameObject newChunkObj = generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight);
+                    GameObject newChunkObj = null;
+                    yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight, returnValue =>
                     {
-                        Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
-                        // GameObject newChunkObj = generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight);
-                        GameObject newChunkObj = null;
-                        yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight, returnValue =>
-                        {
-                            newChunkObj = returnValue;
-                        }));
-                        allChunkDic.Add(currChunkCoord, new Chunk(newChunkObj));
-                        yield return null;
-                    }
-                    else allChunkDic[currChunkCoord].SetVisibility(true);
+                        newChunkObj = returnValue;
+                    }));
+                    allChunkDic.Add(currChunkCoord, new ChunkPrivate(newChunkObj));
                 }
-                newActiveChunks.Add(currChunkCoord);
-            
+                else allChunkDic[currChunkCoord].SetVisibility(true);
+            }
+            newActiveChunks.Add(currChunkCoord);
         }
         foreach (Vector2Int chunkInx in activeChunks)
         {
@@ -99,6 +104,67 @@ public class ChunkManager : MonoBehaviour
         }
         activeChunks = newActiveChunks;
         updatingChunks = false;
+    }
+
+    /// <summary>Generate a small area of a new world to spawn the player in</summary>
+    public IEnumerator CreateSpawnArea()
+    {
+        updatingChunks = true;
+        GameManager.Instance.IsLoading = true;
+        loadingScreen.SetActive(true);
+        float barLength = 900;
+        Chunk spawnChunk = null;
+        int viewDistanceCache = SettingsManager.Instance.ViewDistance;
+
+        viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = false;
+        viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(false);
+        if (SettingsManager.Instance.ViewDistance > 7)
+        {
+            SettingsManager.Instance.ViewDistance = 8;
+        }
+        int numberOfSteps = SettingsManager.Instance.ViewArea.Length;
+        float step = 0;
+        loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);
+        yield return null;
+        foreach (Vector2Int pos in SettingsManager.Instance.ViewArea)
+        {
+            step++;
+            loadingText.text = $"Generating Chunks... {(int)(step * 100 / numberOfSteps)}%";
+            loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);
+            GameObject newChunkObj = null;
+            yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
+            allChunkDic.Add(pos, new ChunkPrivate(newChunkObj));
+            activeChunks.Add(pos);
+            if (pos.x == 0 && pos.y == 0)
+                spawnChunk = newChunkObj.GetComponent<Chunk>();
+        }
+        SettingsManager.Instance.ViewDistance = viewDistanceCache;
+
+        if (spawnChunk != null)
+        {
+            for (int level = chunkHeight - 1; level >= 0; level--)
+            {
+                bool breaking = false;
+                for (int y = 15; y >= 0; y--)
+                {
+                    Block block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
+                    if (block != null && block.type != BlockType.Air)
+                    {
+                        breaking = true;
+
+                        // changes the player position
+                        viewerTransform.parent.position = new(block.position.x + 0.5f, block.position.y, block.position.z + 0.5f);
+                        viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = true;
+                        viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(true);
+                        break;
+                    }
+                }
+                if (breaking) break;
+            }
+        }
+        updatingChunks = false;
+        loadingScreen.SetActive(false);
+        GameManager.Instance.IsLoading = false;
     }
 
     public Vector2Int GetChunkCoordinate(Vector3 position)
@@ -114,9 +180,9 @@ public class ChunkManager : MonoBehaviour
         }
         return null;
     }
-    
+
     /// <summary>Private Chunk class that holds necessary chunk data</summary>
-    private class Chunk
+    private class ChunkPrivate
     {
         /// <summary>The Chunk GameObject</summary>
         public GameObject chunkObj;
@@ -127,7 +193,7 @@ public class ChunkManager : MonoBehaviour
 
         /// <summary>Constructor of this Class</summary>
         /// <param name="chunkObj">The Chunk GameObject</param>
-        public Chunk(GameObject chunkObj)
+        public ChunkPrivate(GameObject chunkObj)
         {
             this.chunkObj = chunkObj;
             position = chunkObj.transform.position;
@@ -143,18 +209,11 @@ public class ChunkManager : MonoBehaviour
 
     private void Awake()
     {
-        allChunkDic = new Dictionary<Vector2Int, Chunk>();
+        allChunkDic = new Dictionary<Vector2Int, ChunkPrivate>();
         activeChunks = new List<Vector2Int>();
         SettingsManager.Instance.ViewDistance = renderDistance;
+        StartCoroutine(CreateSpawnArea());
         // generator.GenerateChunk(new(0, 0, 0), transform);
-    }
-
-    private void OnEnable()
-    {
-        foreach (Transform t in transform) {
-            Destroy(t.gameObject);
-        }
-        // generator.GenerateChunk(new(0, 0, 0), transform, width, chunkHeight);
     }
 
     private void Update()
@@ -170,11 +229,11 @@ public class ChunkManager : MonoBehaviour
         if (allChunkDic != null)
         {
             Gizmos.color = Color.green;
-            foreach (KeyValuePair<Vector2Int, Chunk> entry in allChunkDic)
+            foreach (KeyValuePair<Vector2Int, ChunkPrivate> entry in allChunkDic)
             {
-                Chunk c = entry.Value;
+                ChunkPrivate c = entry.Value;
                 Gizmos.DrawWireCube(c.position, new Vector3(chunkSize, 0, chunkSize));
             }
-        } 
+        }
     }
 }

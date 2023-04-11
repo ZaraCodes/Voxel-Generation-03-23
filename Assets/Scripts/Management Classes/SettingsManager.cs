@@ -34,7 +34,7 @@ public class SettingsManager
     private void SetViewArea()
     {
         Vector2Int lastAdded = new();
-        List<Vector2Int> meow = new()
+        List<Vector2Int> chunkOrder = new()
         {
             lastAdded
         };
@@ -44,29 +44,29 @@ public class SettingsManager
             int currWidth = i * 2 + 1;
 
             lastAdded = new(lastAdded.x + 1, lastAdded.y);
-            meow.Add(lastAdded);
+            chunkOrder.Add(lastAdded);
 
             for (int j = 0; j < currWidth - 2; j++)
             {
                 lastAdded.y += 1;
-                meow.Add(lastAdded);
+                chunkOrder.Add(lastAdded);
             }
             for (int j = 0; j < currWidth - 1; j++)
             {
                 lastAdded.x -= 1;
-                meow.Add(lastAdded);
+                chunkOrder.Add(lastAdded);
             }
             for (int j = 0; j < currWidth - 1; j++)
             {
                 lastAdded.y -= 1;
-                meow.Add(lastAdded);
+                chunkOrder.Add(lastAdded);
             }
             for (int j = 0; j < currWidth - 1; j++)
             {
                 lastAdded.x += 1;
-                meow.Add(lastAdded);
+                chunkOrder.Add(lastAdded);
             }
         }
-        ViewArea = meow.ToArray();
+        ViewArea = chunkOrder.ToArray();
     }
 }

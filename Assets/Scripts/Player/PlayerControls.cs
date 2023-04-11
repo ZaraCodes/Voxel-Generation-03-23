@@ -62,23 +62,19 @@ public class PlayerControls : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 DestroyBlock = true;
-                Debug.Log("0 down");
             }
             if (Input.GetMouseButtonDown(1))
             {
-                Debug.Log("1 down");
                 PlaceBlock = true;
             }
             if (Input.GetMouseButtonUp(0))
             {
                 blockCooldownTimer = 0;
-                Debug.Log("0 up");
                 DestroyBlock = false;
             }
             if (Input.GetMouseButtonUp(1))
             {
                 blockCooldownTimer = 0;
-                Debug.Log("1 up");
                 PlaceBlock = false;
             }
             Move();
