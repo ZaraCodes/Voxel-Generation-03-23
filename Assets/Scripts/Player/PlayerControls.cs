@@ -1,6 +1,7 @@
 using UnityEngine;
 using TMPro;
 using System;
+using System.Collections;
 
 public class PlayerControls : MonoBehaviour
 {
@@ -28,6 +29,16 @@ public class PlayerControls : MonoBehaviour
     [SerializeField] private TMP_Text debugText;
 
     [SerializeField] private SelectedCubeLineDrawer cubeDrawer;
+
+    private bool placeBlock = false;
+    private bool PlaceBlock { get { return placeBlock; } set { placeBlock = value; destroyBlock = false; } }
+
+    private bool destroyBlock = false;
+    private bool DestroyBlock { get { return destroyBlock; } set {  destroyBlock = value; placeBlock = false; } }
+
+    private float breakCooldown = 0.1f;
+    private float placeCooldown = 0.15f;
+    private float blockCooldownTimer = 0f;
     #endregion
 
     #region Functions
@@ -48,6 +59,28 @@ public class PlayerControls : MonoBehaviour
     {
         if (movementActive)
         {
+            if (Input.GetMouseButtonDown(0))
+            {
+                DestroyBlock = true;
+                Debug.Log("0 down");
+            }
+            if (Input.GetMouseButtonDown(1))
+            {
+                Debug.Log("1 down");
+                PlaceBlock = true;
+            }
+            if (Input.GetMouseButtonUp(0))
+            {
+                blockCooldownTimer = 0;
+                Debug.Log("0 up");
+                DestroyBlock = false;
+            }
+            if (Input.GetMouseButtonUp(1))
+            {
+                blockCooldownTimer = 0;
+                Debug.Log("1 up");
+                PlaceBlock = false;
+            }
             Move();
             CameraMove();
             RaycastThing();
@@ -91,30 +124,40 @@ public class PlayerControls : MonoBehaviour
             Debug.DrawLine(blockPos, blockPos + Vector3.right);
             Debug.DrawLine(blockPos, blockPos + Vector3.down);
 
-            if (Input.GetMouseButtonDown(0))
+            if (DestroyBlock)
             {
-                SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                targetSubChunk.RemoveBlockAt(blockPos);
-            }
-            else if (Input.GetMouseButtonDown(1))
-            {
-                switch (normal)
+                if (blockCooldownTimer <= 0)
                 {
-                    case (1, 0, 0):
-                        blockPos.x += 1; break;
-                    case (-1, 0, 0):
-                        blockPos.x -= 1; break;
-                    case (0, 1, 0):
-                        blockPos.y += 1; break;
-                    case (0, -1, 0):
-                        blockPos.y -= 1; break;
-                    case (0, 0, 1):
-                        blockPos.z += 1; break;
-                    case (0, 0, -1):
-                        blockPos.z -= 1; break;
+                    blockCooldownTimer = breakCooldown;
+                    SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
+                    targetSubChunk.RemoveBlockAt(blockPos);
                 }
-                Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
-                SubChunk.AddBlockAt(blockPos, BlockType.WoodPlanks, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
+                blockCooldownTimer -= Time.deltaTime;
+            }
+            else if (PlaceBlock)
+            {
+                if (blockCooldownTimer <= 0)
+                {
+                    blockCooldownTimer = placeCooldown;
+                    switch (normal)
+                    {
+                        case (1, 0, 0):
+                            blockPos.x += 1; break;
+                        case (-1, 0, 0):
+                            blockPos.x -= 1; break;
+                        case (0, 1, 0):
+                            blockPos.y += 1; break;
+                        case (0, -1, 0):
+                            blockPos.y -= 1; break;
+                        case (0, 0, 1):
+                            blockPos.z += 1; break;
+                        case (0, 0, -1):
+                            blockPos.z -= 1; break;
+                    }
+                    Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
+                    SubChunk.AddBlockAt(blockPos, BlockType.WoodPlanks, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
+                }
+                blockCooldownTimer -= Time.deltaTime;
             }
         }
         else if (cubeDrawer.CubeEnabled)
