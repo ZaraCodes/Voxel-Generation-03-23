@@ -17,6 +17,8 @@ public class UVSetter : MonoBehaviour
                 return SetUVs(TileType.Stone);
             case BlockType.WoodPlanks:
                 return SetUVs(TileType.WoodPlanks);
+            case BlockType.Water:
+                return SetUVs(TileType.Water);
         }
         return new Vector2[0];
     }
@@ -51,13 +53,15 @@ public class UVSetter : MonoBehaviour
         { TileType.Grass, new Vector2(1, 0) / 32 },
         { TileType.Dirt, new Vector2(2, 0) / 32 },
         { TileType.GrassSide, new Vector2(3, 0) / 32 },
-        { TileType.WoodPlanks, new Vector2(4, 0) / 32 }
+        { TileType.WoodPlanks, new Vector2(4, 0) / 32 },
+        { TileType.Water, new Vector2(5, 0) / 32 }
     };
 }
 
 public enum TileType
 {
     Stone,
+    Water,
     Dirt,
     Grass,
     GrassSide,

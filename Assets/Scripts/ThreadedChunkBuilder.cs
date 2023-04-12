@@ -1,7 +1,9 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Unity.VisualScripting;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ThreadedChunkBuilder
 {
@@ -43,7 +45,7 @@ public class ThreadedChunkBuilder
                 for (int k = 0; k < size; k++)
                 {
                     Block block = chunk.subChunks[level, i, j, k];
-                    if (block.type == BlockType.Air) continue;
+                    if (block.RenderType == BlockRenderType.Air) continue;
                     List<BlockFace> faces = new List<BlockFace>();
 
                     foreach ((int, int, int) blockSide in blockSides)
@@ -62,17 +64,12 @@ public class ThreadedChunkBuilder
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
-                        //if (chunk.subChunks[lookupY].TryGetValue($"{block.position.x + blockSide.Item1}/{block.position.y + blockSide.Item2}/{block.position.z + blockSide.Item3}", out Block neighborBlock))
-                        //try
-                        //{
                         if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
-                            if (chunk.subChunks[
-                                level,
-                                i + blockSide.Item1,
-                                j + blockSide.Item2,
-                                k + blockSide.Item3
-                                ].type == BlockType.Air)
+                            Block neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
+                            if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                             {
                                 AddBlockFace(faces, blockSide);
                             }
@@ -90,7 +87,7 @@ public class ThreadedChunkBuilder
                     {
                         position = block.position,
                         blockFaces = faces.ToArray(),
-                        blockType = block.type,
+                        blockType = block.Type,
                     };
                     subChunkData.Add(blockAndItsFaces);
                 }
@@ -110,7 +107,8 @@ public class ThreadedChunkBuilder
                 for (int k = 0; k < size; k++)
                 {
                     Block block = chunk.subChunks[level, i, j, k];
-                    if (block.type == BlockType.Air) continue;
+                    //if (block.Type == BlockType.Air) continue;
+                    if (block.RenderType == BlockRenderType.Air) continue;
                     List<BlockFace> faces = new List<BlockFace>();
 
                     foreach ((int, int, int) blockSide in blockSides)
@@ -129,66 +127,102 @@ public class ThreadedChunkBuilder
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
-                        //if (chunk.subChunks[lookupY].TryGetValue($"{block.position.x + blockSide.Item1}/{block.position.y + blockSide.Item2}/{block.position.z + blockSide.Item3}", out Block neighborBlock))
-                        //try
-                        //{
                         if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
-                            if (chunk.subChunks[
-                                level,
-                                i + blockSide.Item1,
-                                j + blockSide.Item2,
-                                k + blockSide.Item3
-                                ].type == BlockType.Air)
+                            Block neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
+                            if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                             {
                                 AddBlockFace(faces, blockSide);
                             }
                         }
-                        // only execute this if this method gets called during chunk generation
-                        else 
+                        else
                         {
                             if (j + blockSide.Item2 == -1 && level != 0)
                             {
-                                if (chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3].type == BlockType.Air)
+                                Block neighborBlock = chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3].Type == BlockType.Air)
+                                //    {
+                                //        AddBlockFace(faces, blockSide);
+                                //    }
                             }
                             else if (j + blockSide.Item2 == size && level != height)
                             {
-                                if (chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3].type == BlockType.Air)
+                                Block neighborBlock = chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3].Type == BlockType.Air)
+                                //{
+                                //    AddBlockFace(faces, blockSide);
+                                //}
                             }
                             // 0: x+  1: x-  2: z+  3: z-
                             if (i + blockSide.Item1 == size)
                             {
-                                if (neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3].type == BlockType.Air)
+                                Block neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3].Type == BlockType.Air)
+                                //{
+                                //    AddBlockFace(faces, blockSide);
+                                //}
                             }
                             else if (i + blockSide.Item1 == -1)
                             {
-                                if (neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3].type == BlockType.Air)
+                                Block neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3].Type == BlockType.Air)
+                                //{
+                                //    AddBlockFace(faces, blockSide);
+                                //}
                             }
                             else if (k + blockSide.Item3 == size)
                             {
-                                if (neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0].type == BlockType.Air)
+                                Block neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0].Type == BlockType.Air)
+                                //{
+                                //    AddBlockFace(faces, blockSide);
+                                //}
                             }
                             else if (k + blockSide.Item3 == -1)
                             {
-                                if (neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1].type == BlockType.Air)
+                                Block neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
+                                if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+                                    (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
                                 {
                                     AddBlockFace(faces, blockSide);
                                 }
+                                //if (neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1].Type == BlockType.Air)
+                                //{
+                                //    AddBlockFace(faces, blockSide);
+                                //}
                             }
                         }
                     }
@@ -196,7 +230,7 @@ public class ThreadedChunkBuilder
                     {
                         position = block.position,
                         blockFaces = faces.ToArray(),
-                        blockType = block.type,
+                        blockType = block.Type,
                     };
                     subChunkData.Add(blockAndItsFaces);
                 }
@@ -222,10 +256,19 @@ public class ThreadedChunkBuilder
                     Block b = new();
                     // Debug.Log($"{level} {x} {y} {z}");
                     b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, (level - yOffset) * size + y, (int)(rootPos.z + cornerPos.z) + z);
-                    if (Evaluate3DNoise(b.position)) b.type = BlockType.Stone;
+                    if (Evaluate3DNoise(b.position)) b.Type = BlockType.Stone;
                     else
                     {
-                        b.type = BlockType.Air;
+                        if (b.position.y <= 0)
+                        {
+                            b.RenderType = BlockRenderType.Transparent;
+                            b.Type = BlockType.Water;
+                        }
+                        else
+                        {
+                            b.Type = BlockType.Air;
+                            b.RenderType = BlockRenderType.Air;
+                        }
                     }
                     chunk.subChunks[level, x, y, z] = b;
                 }
@@ -294,7 +337,7 @@ public class ThreadedChunkBuilder
                 for (int z = 0; z < size; z++)
                 {
                     Block block = chunk.subChunks[level, x, y, z];
-                    if (block.type == BlockType.Stone)
+                    if (block.Type == BlockType.Stone)
                     {
                         // If the block above this block is air, then this block is grass
                         AirCheckResult result = AirCheck(chunk, x, y, z, level, height, size, 1, block, BlockType.Grass);
@@ -324,9 +367,9 @@ public class ThreadedChunkBuilder
             if (levelIdx == height) return AirCheckResult.Break;
         }
         Block blockToCheck = chunk.subChunks[levelIdx, x, ycheck, z];
-        if (blockToCheck.type == BlockType.Air)
+        if (blockToCheck.Type == BlockType.Air)
         {
-            block.type = replacement;
+            block.Type = replacement;
             return AirCheckResult.Continue;
         }
         return AirCheckResult.Default;

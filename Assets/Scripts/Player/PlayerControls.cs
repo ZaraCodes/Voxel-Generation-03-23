@@ -113,7 +113,7 @@ public class PlayerControls : MonoBehaviour
             {
                 debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
                 SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                debugText.text += $"{targetSubChunk.GetBlock(blockPos).type}\n";
+                debugText.text += $"{targetSubChunk.GetBlock(blockPos).Type}\n";
             }
             cubeDrawer.CubePosition = blockPos;
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);

@@ -148,7 +148,7 @@ public class ChunkManager : MonoBehaviour
                 for (int y = 15; y >= 0; y--)
                 {
                     Block block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
-                    if (block != null && block.type != BlockType.Air)
+                    if (block != null && block.Type != BlockType.Air)
                     {
                         breaking = true;
 

@@ -12,8 +12,8 @@ public class Chunk : MonoBehaviour
     {
         if (level < ChunkManager.Instance.chunkHeight && level >= 0 && x >= 0 && x < ChunkManager.Instance.width && y >= 0 && y < ChunkManager.Instance.width && z >= 0 && z < ChunkManager.Instance.width)
         {
-            Debug.Log($"{subChunks[level, x, y, z].position} {subChunks[level, x, y, z].type}");
-            subChunks[level, x, y, z].type = blockType;
+            Debug.Log($"{subChunks[level, x, y, z].position} {subChunks[level, x, y, z].Type}");
+            subChunks[level, x, y, z].Type = blockType;
         }
     }
 
