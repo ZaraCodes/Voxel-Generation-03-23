@@ -27,4 +27,9 @@ public class SettingsMenu : MonoBehaviour
         renderDistanceDisplay.text = newDistance.ToString();
         SettingsManager.Instance.ViewDistance = (int) newDistance;
     }
+
+    private void OnEnable()
+    {
+        renderDistanceDisplay.text = SettingsManager.Instance.ViewDistance.ToString();
+    }
 }
