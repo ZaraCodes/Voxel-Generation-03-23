@@ -83,7 +83,7 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                if (!allChunkDic.ContainsKey(currChunkCoord))
+                if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].chunkObj.GetComponent<Chunk>().generationFinished)
                 {
                     Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
                     // GameObject newChunkObj = generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight);
@@ -92,7 +92,7 @@ public class ChunkManager : MonoBehaviour
                     {
                         newChunkObj = returnValue;
                     }));
-                    allChunkDic.Add(currChunkCoord, new ChunkPrivate(newChunkObj));
+                    if (!allChunkDic.ContainsKey(currChunkCoord)) allChunkDic.Add(currChunkCoord, new ChunkPrivate(newChunkObj));
                 }
                 else allChunkDic[currChunkCoord].SetVisibility(true);
             }
@@ -133,7 +133,8 @@ public class ChunkManager : MonoBehaviour
             loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);
             GameObject newChunkObj = null;
             yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
-            allChunkDic.Add(pos, new ChunkPrivate(newChunkObj));
+            if (!allChunkDic.ContainsKey(pos))
+                allChunkDic.Add(pos, new ChunkPrivate(newChunkObj));
             activeChunks.Add(pos);
             if (pos.x == 0 && pos.y == 0)
                 spawnChunk = newChunkObj.GetComponent<Chunk>();
@@ -181,6 +182,17 @@ public class ChunkManager : MonoBehaviour
         return null;
     }
 
+    /// <summary>Adds a chunk to the dictionary</summary>
+    /// <param name="pos"></param>
+    /// <param name="chunk"></param>
+    public void AddChunk(Vector2Int pos, GameObject chunk)
+    {
+        if (!allChunkDic.ContainsKey(pos))
+        {
+            allChunkDic.Add(pos, new ChunkPrivate(chunk));
+        }
+    }
+
     /// <summary>Private Chunk class that holds necessary chunk data</summary>
     private class ChunkPrivate
     {
@@ -211,6 +223,7 @@ public class ChunkManager : MonoBehaviour
     {
         allChunkDic = new Dictionary<Vector2Int, ChunkPrivate>();
         activeChunks = new List<Vector2Int>();
+        width = (int)chunkSize;
         SettingsManager.Instance.ViewDistance = renderDistance;
         StartCoroutine(CreateSpawnArea());
         // generator.GenerateChunk(new(0, 0, 0), transform);

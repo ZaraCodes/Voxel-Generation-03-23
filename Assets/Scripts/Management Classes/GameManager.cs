@@ -18,6 +18,8 @@ public class GameManager
     private bool isLoading;
     public bool IsLoading { get { return isLoading; } set { isLoading = value; } }
 
+    public ThreadedChunkBuilder ChunkBuilder { get; set; }
+
     private GameManager()
     {
         isLoading = false;

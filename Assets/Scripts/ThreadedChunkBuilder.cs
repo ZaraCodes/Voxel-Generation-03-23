@@ -1,14 +1,12 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Unity.VisualScripting;
 using UnityEngine;
-using UnityEngine.Rendering;
 
 public class ThreadedChunkBuilder
 {
     int octaves = 3;
-    float frequency = 0.0625f;
+    float frequency = 0.0625f / 2f;
     float persistence = 0.5f;
     float lacunarity = 2f;
 
@@ -16,28 +14,36 @@ public class ThreadedChunkBuilder
     public int Seed { get { return seed; } set { SetSeed(value); } }
 
     private SimplexNoise baseNoise;
+    private SimplexNoise hillinessNoise;
+    private SimplexNoise worldHeightNoise;
 
-    private (int, int, int)[] blockSides = new (int, int, int)[] { (-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1) };
+    private AnimationCurve worldHeightCurve;
 
-    public ThreadedChunkBuilder()
+    private readonly (int, int, int)[] blockSides = new (int, int, int)[] { (-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, 1, 0), (0, 0, -1), (0, 0, 1) };
+
+    public ThreadedChunkBuilder(AnimationCurve worldHeightCurve)
     {
+        this.worldHeightCurve = worldHeightCurve;
         Seed = Random.Range(int.MinValue, int.MaxValue);
+        GameManager.Instance.ChunkBuilder = this;
     }
 
     private void SetSeed(int seed)
     {
         this.seed = seed;
         baseNoise = new SimplexNoise(seed);
+        hillinessNoise = new SimplexNoise(++seed);
+        worldHeightNoise = new SimplexNoise(++seed);
     }
 
-    public Task StartBuildBlockSides(Chunk chunk, List<BlockAndItsFaces>[] chunkData, int level, int size, int height)
+    public Task StartBuildBlockSides(Chunk chunk, Chunk[] neighborChunks, List<BlockAndItsFaces>[] chunkData, int level, int size, int height)
     {
-        return Task.Run(() => { BuildBlockSides(chunk, chunkData, level, size, height); });
+        return Task.Run(() => { BuildBlockSides(chunk, neighborChunks, chunkData, level, size, height); });
     }
 
-    public void BuildBlockSides(Chunk chunk, List<BlockAndItsFaces>[] chunkData, int level, int size, int height, bool chunkGeneration = true)
+    public void BuildBlockSides(Chunk chunk, Chunk[] neighborChunks, List<BlockAndItsFaces>[] chunkData, int level, int size, int height, bool chunkGeneration = true)
     {
-        List<BlockAndItsFaces> subChunkData = new List<BlockAndItsFaces>();
+        List<BlockAndItsFaces> subChunkData = new();
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
@@ -46,7 +52,7 @@ public class ThreadedChunkBuilder
                 {
                     Block block = chunk.subChunks[level, i, j, k];
                     if (block.RenderType == BlockRenderType.Air) continue;
-                    List<BlockFace> faces = new List<BlockFace>();
+                    List<BlockFace> faces = new();
 
                     foreach ((int, int, int) blockSide in blockSides)
                     {
@@ -67,19 +73,40 @@ public class ThreadedChunkBuilder
                         if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
                             Block neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
-                            if (block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
-                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
-                                (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type))
-                            {
-                                AddBlockFace(faces, blockSide);
-                            }
+                            if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                         }
                         // only execute this if this method gets called during chunk generation
                         else if (chunkGeneration)
                         {
-                            if (!Evaluate3DNoise(new(block.position.x + blockSide.Item1, block.position.y + blockSide.Item2, block.position.z + blockSide.Item3)))
+                            if (i + blockSide.Item1 == size)
                             {
-                                AddBlockFace(faces, blockSide);
+                                Block neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                            }
+                            else if (i + blockSide.Item1 == -1)
+                            {
+                                Block neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                            }
+                            else if (j + blockSide.Item2 == size)
+                            {
+                                Block neighborBlock = chunk.GetBlock(level + 1, i + blockSide.Item1, 0, k + blockSide.Item3);
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                            }
+                            else if (j + blockSide.Item2 == -1)
+                            {
+                                Block neighborBlock = chunk.GetBlock(level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3);
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                            }
+                            else if (k + blockSide.Item3 == size)
+                            {
+                                Block neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                            }
+                            else if (k + blockSide.Item3 == -1)
+                            {
+                                Block neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
+                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                         }
                     }
@@ -95,6 +122,14 @@ public class ThreadedChunkBuilder
         }
         if (chunkGeneration) chunkData[level] = subChunkData;
         else chunkData[0] = subChunkData;
+    }
+
+    private static bool CheckBlockBorder(Block block, Block neighborBlock)
+    {
+        if (neighborBlock == null) return false;
+        return block.RenderType == BlockRenderType.Solid && (neighborBlock.RenderType == BlockRenderType.Transparent || neighborBlock.RenderType == BlockRenderType.Air) ||
+            (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Air) ||
+            (block.RenderType == BlockRenderType.Transparent && neighborBlock.RenderType == BlockRenderType.Transparent && block.Type != neighborBlock.Type);
     }
 
     public List<BlockAndItsFaces> BuildBlockSides(Chunk chunk, Chunk[] neighborChunks, int level, int size, int height)
@@ -307,20 +342,36 @@ public class ThreadedChunkBuilder
     {
         float noise = 0f;
         float divisor = 0f;
-
+        Vector3 octaveOffset = new(25, -4, 15);
         for (int octave = 0; octave < octaves; octave++)
         {
-            noise += baseNoise.Evaluate(position * Mathf.Pow(lacunarity, octave) * frequency / 3) * Mathf.Pow(persistence, octave);
+            noise += baseNoise.Evaluate(frequency * Mathf.Pow(lacunarity, octave) * position / 3 + octaveOffset * octave) * Mathf.Pow(persistence, octave);
             divisor += Mathf.Pow(persistence, octave);
         }
         noise /= divisor;
 
-        // float result = baseNoise.Evaluate(position * 0.0625f / 3);
-        //if (position.y < 52) return true;
-        if (position.y / 25f < noise)
+        var threshold = EvaluateHilliness(position) * 75;
+        var worldHeight = EvaluateWorldHeight(position);
+
+        if (-worldHeight + 0.1f + position.y / threshold < noise)
             return true;
-        // if (result > 0)
         return false;
+    }
+
+    /// <summary>Evaluates the hilliness value at the given position</summary>
+    /// <param name="position">A value between 0 and 1</param>
+    /// <returns></returns>
+    public float EvaluateHilliness(Vector3 position)
+    {
+        return (hillinessNoise.Evaluate(new Vector3(position.x * frequency, 100f, position.z * frequency) / 10) + 1) / 2;
+    }
+
+    /// <summary>Evaluates the world height at the given position</summary>
+    /// <param name="position">A value between 0 and 1</param>
+    /// <returns></returns>
+    public float EvaluateWorldHeight(Vector3 position)
+    {
+        return worldHeightCurve.Evaluate((worldHeightNoise.Evaluate(new Vector3(position.x * frequency, 0f, position.z * frequency) / 20) + 1) / 2);
     }
 
     public Task StartPopulateChunk(Chunk chunk, int level, int size, int height)

@@ -2240,22 +2240,76 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 969827498adfc3e42a7492735864f74e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  threaded: 0
-  threadIterations: 0
-  waterPrefab: {fileID: 0}
-  treePrefab: {fileID: 0}
   mDefaultMaterial: {fileID: 2100000, guid: 2f0779af02a1a50419c82d7377f31e80, type: 2}
-  mNoiseStrength: 111
-  frequency: 0.001
-  octaves: 1
-  lacunarity: 2
-  persistence: 0.5
-  forestThreshhold: 0
-  forestFrequency: 0
-  hillinessFrequency: 0
-  baseHeightFequency: 0
-  baseHeightMultiplier: 0
-  baseHeight: 0
+  worldHeightCurve:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0.04273803
+      outSlope: 0.04273803
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0.14429672
+    - serializedVersion: 3
+      time: 0.1006582
+      value: 0.026544778
+      inSlope: 0.6583007
+      outSlope: 0.6583007
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.2522176
+    - serializedVersion: 3
+      time: 0.21058084
+      value: 0.1384992
+      inSlope: 0.66763026
+      outSlope: 0.66763026
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.10642767
+      outWeight: 0.033488955
+    - serializedVersion: 3
+      time: 0.37117234
+      value: 0.2501557
+      inSlope: 0.48157123
+      outSlope: 0.48157123
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.10586146
+    - serializedVersion: 3
+      time: 0.7289008
+      value: 0.41771075
+      inSlope: 0.4355167
+      outSlope: 0.4355167
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.2950285
+    - serializedVersion: 3
+      time: 0.78749555
+      value: 0.8928102
+      inSlope: 0.47477582
+      outSlope: 0.47477582
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.33333334
+      outWeight: 0.13060796
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 0.26484898
+      outSlope: 0.26484898
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0.27731013
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
   logPerformance: 0
 --- !u!4 &1082325507
 Transform:
@@ -3628,7 +3682,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   menuObject: {fileID: 1359879305}
   player: {fileID: 1939203025569685525}
-  settingsMenu: {fileID: 0}
 --- !u!1 &1270787278578514601
 GameObject:
   m_ObjectHideFlags: 0

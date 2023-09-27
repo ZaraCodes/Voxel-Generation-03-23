@@ -5,6 +5,7 @@ using UnityEngine;
 public class Chunk : MonoBehaviour
 {
     public Block[,,,] subChunks;
+    public bool generationFinished;
 
     public Vector2Int ChunkPos { get; set; }
 
