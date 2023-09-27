@@ -22,12 +22,18 @@ public class Block
                     RenderType = BlockRenderType.Solid; break;
                 case BlockType.WoodPlanks:
                     RenderType = BlockRenderType.Solid; break;
-                case BlockType.Water: RenderType = BlockRenderType.Transparent;
-                    break;
+                case BlockType.Water:
+                    RenderType = BlockRenderType.Transparent; break;
+                case BlockType.WoodLog:
+                    RenderType = BlockRenderType.Solid; break;
+                case BlockType.Leafes:
+                    RenderType = BlockRenderType.Transparent2; break;
             }
         }
     }
+
     public Vector3 position = Vector3.zero;
+
     public BlockRenderType RenderType = BlockRenderType.Solid;
 
 
@@ -41,11 +47,14 @@ public enum BlockType
     Dirt,
     Grass,
     WoodPlanks,
+    WoodLog,
+    Leafes
 }
 
 public enum BlockRenderType
 {
     Solid,
     Transparent,
+    Transparent2,
     Air
 }

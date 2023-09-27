@@ -2,14 +2,21 @@ using UnityEngine;
 using TMPro;
 using System;
 using System.Collections;
+using UnityEngine.InputSystem;
 
 public class PlayerControls : MonoBehaviour
 {
     #region References
+    /// <summary>Reference to the character controller component</summary>
     public CharacterController CharCtrl;
 
     [SerializeField] private ChunkManager chunkManager;
     [SerializeField] private Generator generator;
+    [SerializeField] private BlockType selectedBlock;
+    /// <summary>
+    /// Reference to the input system class
+    /// </summary>
+    private Controls controls;
 
     public Camera PlayerCamera;
     [SerializeField]
@@ -51,6 +58,17 @@ public class PlayerControls : MonoBehaviour
         QualitySettings.vSyncCount = 0;
         // Debug.Log($"Round {40f / 16f + 0.01f} to {Mathf.RoundToInt(40f / 16f + 0.01f)}");
         // Debug.Log($"Round {24f / 16f + 0.01f} to {Mathf.RoundToInt(24f / 16f + 0.01f)}");
+        controls = new();
+
+        controls.Player.Hotkey1.performed += OnHotkey1;
+        controls.Player.Hotkey2.performed += OnHotkey2;
+        controls.Player.Hotkey3.performed += OnHotkey3;
+        controls.Player.Hotkey4.performed += OnHotkey4;
+        controls.Player.Hotkey5.performed += OnHotkey5;
+        controls.Player.Hotkey6.performed += OnHotkey6;
+        controls.Player.Hotkey7.performed += OnHotkey7;
+        controls.Player.Hotkey8.performed += OnHotkey8;
+        controls.Player.Hotkey9.performed += OnHotkey9;
 
     }
 
@@ -153,7 +171,7 @@ public class PlayerControls : MonoBehaviour
                             blockPos.z -= 1; break;
                     }
                     Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
-                    SubChunk.AddBlockAt(blockPos, BlockType.WoodPlanks, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
+                    SubChunk.AddBlockAt(blockPos, selectedBlock, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
                 }
                 blockCooldownTimer -= Time.deltaTime;
             }
@@ -210,5 +228,87 @@ public class PlayerControls : MonoBehaviour
     {
         movementActive = active;
     }
+
+    private void OnHotkey1(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.Stone;
+        }
+    }
+
+    private void OnHotkey2(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.Dirt;
+        }
+    }
+
+    private void OnHotkey3(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.Grass;
+        }
+    }
+
+    private void OnHotkey4(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.WoodPlanks;
+        }
+    }
+
+    private void OnHotkey5(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.WoodLog;
+        }
+    }
+
+    private void OnHotkey6(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            selectedBlock = BlockType.Leafes;
+        }
+    }
+
+    private void OnHotkey7(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+
+        }
+    }
+
+    private void OnHotkey8(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+
+        }
+    }
+    private void OnHotkey9(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+
+        }
+    }
+
+    private void OnEnable()
+    {
+        controls.Enable();
+    }
+
+    private void OnDisable()
+    {
+        controls.Disable();
+    }
+
     #endregion
 }

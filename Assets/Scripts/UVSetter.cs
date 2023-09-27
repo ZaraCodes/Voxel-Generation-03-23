@@ -19,6 +19,10 @@ public class UVSetter : MonoBehaviour
                 return SetUVs(TileType.WoodPlanks);
             case BlockType.Water:
                 return SetUVs(TileType.Water);
+            case BlockType.WoodLog:
+                return GetTopOrientedBlockUVs(blockFace, TileType.WoodLogTop, TileType.WoodLogTop, TileType.WoodLogSide);
+            case BlockType.Leafes:
+                return SetUVs(TileType.Leaves);
         }
         return new Vector2[0];
     }
@@ -47,14 +51,17 @@ public class UVSetter : MonoBehaviour
     }
 
 
-    private static Dictionary<TileType, Vector2> tileCoordinates = new Dictionary<TileType, Vector2>()
+    private static Dictionary<TileType, Vector2> tileCoordinates = new()
     {
         { TileType.Stone, new Vector2(0, 0) / 32 },
         { TileType.Grass, new Vector2(1, 0) / 32 },
         { TileType.Dirt, new Vector2(2, 0) / 32 },
         { TileType.GrassSide, new Vector2(3, 0) / 32 },
         { TileType.WoodPlanks, new Vector2(4, 0) / 32 },
-        { TileType.Water, new Vector2(5, 0) / 32 }
+        { TileType.Water, new Vector2(5, 0) / 32 },
+        { TileType.WoodLogSide, new Vector2(6, 0) / 32 },
+        { TileType.WoodLogTop, new Vector2(7, 0) / 32 },
+        { TileType.Leaves, new Vector2(8, 0) / 32 }
     };
 }
 
@@ -66,4 +73,7 @@ public enum TileType
     Grass,
     GrassSide,
     WoodPlanks,
+    WoodLogSide,
+    WoodLogTop,
+    Leaves
 }

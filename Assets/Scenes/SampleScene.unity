@@ -3749,6 +3749,7 @@ MonoBehaviour:
   CharCtrl: {fileID: 1939203025569685524}
   chunkManager: {fileID: 1340725599}
   generator: {fileID: 1082325506}
+  selectedBlock: 1
   PlayerCamera: {fileID: 963194227}
   moveSpeed: 4
   rotationSpeed: 1

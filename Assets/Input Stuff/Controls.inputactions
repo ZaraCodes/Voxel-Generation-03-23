@@ -1,0 +1,231 @@
+{
+    "name": "Controls",
+    "maps": [
+        {
+            "name": "Player",
+            "id": "83f45c68-31db-4560-9e52-40081d44ab11",
+            "actions": [
+                {
+                    "name": "Hotkey 1",
+                    "type": "Button",
+                    "id": "2cc8a49f-7f75-4d18-8c2a-392896506dca",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 2",
+                    "type": "Button",
+                    "id": "a939588c-4ea6-42b1-a6b7-8ab77d121879",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 3",
+                    "type": "Button",
+                    "id": "86d47edd-f113-4fe0-9ea4-b95c1c4f9f3f",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 4",
+                    "type": "Button",
+                    "id": "c9d6c91c-7375-49e6-8089-aedda119a4bd",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 5",
+                    "type": "Button",
+                    "id": "9f6dc4f6-f10b-4a9b-9c3f-e58935ba57f1",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 6",
+                    "type": "Button",
+                    "id": "9f5c50e3-a711-482a-8d3f-afa3b1c26616",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 7",
+                    "type": "Button",
+                    "id": "783ea7fd-0ab3-4d40-8c45-991c682b7f1a",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 8",
+                    "type": "Button",
+                    "id": "5bb1ebb7-de77-4dfa-8c6f-8f250108ccca",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 9",
+                    "type": "Button",
+                    "id": "b8f2fe15-6183-49b5-80e3-d50ee2e34166",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Hotkey 0",
+                    "type": "Button",
+                    "id": "25bcec78-ac2b-476a-ad32-332882d8e697",
+                    "expectedControlType": "Button",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                }
+            ],
+            "bindings": [
+                {
+                    "name": "",
+                    "id": "b0db8945-6306-498e-a5e0-57987103414a",
+                    "path": "<Keyboard>/1",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 1",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0aa52007-e67d-4f0d-8f4a-daf62cc754bd",
+                    "path": "<Keyboard>/2",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 2",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "c3d4980d-6d6d-49db-a013-144c5ee5edb1",
+                    "path": "<Keyboard>/3",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "af7ad6d6-981c-4e0e-b02f-863e295610e7",
+                    "path": "<Keyboard>/4",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 4",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "0c907b67-19e6-4ebe-89ad-4051060e3f19",
+                    "path": "<Keyboard>/5",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 5",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "9245d6b3-203d-4ad1-9175-7a1b0ad728c2",
+                    "path": "<Keyboard>/6",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 6",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "51a97c9d-89a0-473a-bb83-ab50c32aeb28",
+                    "path": "<Keyboard>/7",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 7",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "67df148d-076e-4233-8990-95572208dac0",
+                    "path": "<Keyboard>/8",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 8",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "bf3bd799-7c79-47c2-992e-74b4b7c2e083",
+                    "path": "<Keyboard>/9",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 9",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "e8ab03c6-e582-4977-9cf2-e3d758cc0bb0",
+                    "path": "<Keyboard>/0",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "Keyboard + Mouse",
+                    "action": "Hotkey 0",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                }
+            ]
+        }
+    ],
+    "controlSchemes": [
+        {
+            "name": "Keyboard + Mouse",
+            "bindingGroup": "Keyboard + Mouse",
+            "devices": [
+                {
+                    "devicePath": "<Keyboard>",
+                    "isOptional": false,
+                    "isOR": false
+                },
+                {
+                    "devicePath": "<Mouse>",
+                    "isOptional": false,
+                    "isOR": false
+                }
+            ]
+        }
+    ]
+}
