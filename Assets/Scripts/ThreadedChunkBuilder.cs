@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 public class ThreadedChunkBuilder
 {
@@ -338,7 +339,8 @@ public class ThreadedChunkBuilder
         var threshold = EvaluateHilliness(position) * 75;
         var worldHeight = EvaluateWorldHeight(position);
 
-        if (-worldHeight + 0.1f + position.y / threshold < noise)
+        //if (-worldHeight + 0.1f + position.y / threshold < noise)
+        if ((worldHeight - 0.2f) * 1.5f > position.y / 100f)
             return true;
         return false;
     }
@@ -393,6 +395,26 @@ public class ThreadedChunkBuilder
             }
         }
     }
+
+    public void GenerateTree(Chunk chunk, int level, int size, int x, int y, int z)
+    {
+        // replace grass block with dirt
+        if (y == 0) chunk.UpdateBlock(BlockType.Dirt, level - 1, x, size - 1, z);
+        else chunk.UpdateBlock(BlockType.Dirt, level, x, y - 1, z);
+        
+        for (int i = 0; i < 5; i++)
+        {
+            int level2 = level;
+            int y2 = y;
+            while (y2 + i > size)
+            {
+                y2 -= size;
+                level2++;
+            }
+            chunk.UpdateBlock(BlockType.WoodLog, level2, x, y2 + i, z);
+        }
+    }
+
     private AirCheckResult AirCheck(Chunk chunk, int x, int y, int z, int levelIdx, int height, int size, int offset, Block block, BlockType replacement)
     {
         int ycheck = y + offset;
@@ -400,7 +422,10 @@ public class ThreadedChunkBuilder
         {
             levelIdx++;
             ycheck -= size;
-            if (levelIdx == height) return AirCheckResult.Break;
+            if (levelIdx == height)
+            {
+                return AirCheckResult.Break;
+            }
         }
         Block blockToCheck = chunk.subChunks[levelIdx, x, ycheck, z];
         if (blockToCheck.Type == BlockType.Air)

@@ -33,40 +33,29 @@ public class SettingsManager
 
     private void SetViewArea()
     {
-        Vector2Int lastAdded = new();
-        List<Vector2Int> chunkOrder = new()
+        List<Vector2Int> chunkOrder = new();
+
+        // add all vectors for the visible area
+        for (int x = -ViewDistance + 1; x < ViewDistance; x++)
         {
-            lastAdded
-        };
-
-        for (int i = 1; i < ViewDistance + 1; i++)
-        {
-            int currWidth = i * 2 + 1;
-
-            lastAdded = new(lastAdded.x + 1, lastAdded.y);
-            chunkOrder.Add(lastAdded);
-
-            for (int j = 0; j < currWidth - 2; j++)
+            for (int z = -ViewDistance + 1; z < ViewDistance; z++)
             {
-                lastAdded.y += 1;
-                chunkOrder.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.x -= 1;
-                chunkOrder.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.y -= 1;
-                chunkOrder.Add(lastAdded);
-            }
-            for (int j = 0; j < currWidth - 1; j++)
-            {
-                lastAdded.x += 1;
-                chunkOrder.Add(lastAdded);
+                chunkOrder.Add(new Vector2Int(x, z));
             }
         }
+
+        // sort it
+        for (int i = 0; i + 1 < chunkOrder.Count; i++)
+        {
+            for (int j = i + 1; j < chunkOrder.Count; j++)
+            {
+                if (chunkOrder[i].magnitude > chunkOrder[j].magnitude)
+                {
+                    (chunkOrder[i], chunkOrder[j]) = (chunkOrder[j], chunkOrder[i]);
+                }
+            }
+        }
+
         ViewArea = chunkOrder.ToArray();
     }
 }
