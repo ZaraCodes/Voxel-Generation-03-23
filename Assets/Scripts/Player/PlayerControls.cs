@@ -9,7 +9,8 @@ public class PlayerControls : MonoBehaviour
     #region References
     /// <summary>Reference to the character controller component</summary>
     public CharacterController CharCtrl;
-
+    [SerializeField, Tooltip("Entity Collider")]
+    private BoxCollider entityCollider;
     [SerializeField] private ChunkManager chunkManager;
     [SerializeField] private Generator generator;
     [SerializeField] private BlockType selectedBlock;
@@ -19,6 +20,12 @@ public class PlayerControls : MonoBehaviour
     private Controls controls;
 
     public Camera PlayerCamera;
+
+    [SerializeField, Tooltip("The player's game mode")]
+    private Gamemode gamemode;
+
+    private bool flying;
+
     [SerializeField]
     int moveSpeed;
 
@@ -170,6 +177,12 @@ public class PlayerControls : MonoBehaviour
                         case (0, 0, -1):
                             blockPos.z -= 1; break;
                     }
+                    Bounds bounds = new Bounds(new(blockPos.x + 0.5f, blockPos.y - 0.5f, blockPos.z + 0.5f), Vector3.one);
+                    if (CharCtrl.bounds.Intersects(bounds))
+                    {
+                        Debug.Log("Cannot place block here");
+                        return;
+                    }
                     Vector2Int chunkPos = ChunkManager.Instance.GetChunkCoordinate(blockPos);
                     SubChunk.AddBlockAt(blockPos, selectedBlock, ChunkManager.Instance.GetChunk(chunkPos).GetComponent<Chunk>());
                 }
@@ -182,6 +195,24 @@ public class PlayerControls : MonoBehaviour
         }
     }
 
+    Bounds placedBlockBounds;
+    private void showplacedaura()
+    {
+        if (placedBlockBounds != null)
+        {
+            Debug.DrawRay(placedBlockBounds.min, Vector3.up * placedBlockBounds.size.y);
+            Debug.DrawRay(placedBlockBounds.min, Vector3.right * placedBlockBounds.size.x);
+            Debug.DrawRay(placedBlockBounds.min, Vector3.forward * placedBlockBounds.size.z);
+
+            Debug.DrawRay(placedBlockBounds.min + Vector3.right * placedBlockBounds.size.x, Vector3.forward * placedBlockBounds.size.z);
+            Debug.DrawRay(placedBlockBounds.min + Vector3.right * placedBlockBounds.size.x, Vector3.up * placedBlockBounds.size.y);
+            
+            Debug.DrawRay(placedBlockBounds.max, Vector3.down * placedBlockBounds.size.y);
+            Debug.DrawRay(placedBlockBounds.max, Vector3.left * placedBlockBounds.size.x);
+            Debug.DrawRay(placedBlockBounds.max, Vector3.back * placedBlockBounds.size.z);
+        }
+    }
+
     /// <summary>
     /// Player Movement
     /// </summary>
@@ -191,9 +222,29 @@ public class PlayerControls : MonoBehaviour
 
         direction = Vector3.ClampMagnitude(direction, 1) * moveSpeed;
 
+        if (gamemode == Gamemode.Survival)
+        {
+            Walk(ref direction);
+        }
+        else if (gamemode == Gamemode.Creative)
+        {
+            if (flying) Fly(ref direction);
+            else Walk(ref direction);
+            if (Input.GetKeyDown(KeyCode.F))
+            {
+                flying = !flying;
+                if (flying) transform.position = new Vector3(transform.position.x, transform.position.y + .1f, transform.position.x);
+            }
+        }
+
+        CharCtrl.Move(direction * Time.deltaTime);
+    }
+
+    private void Walk(ref Vector3 direction)
+    {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            veloY = 4.03f;
+            veloY = 5.03f;
             direction.y = veloY;
         }
         if (!CharCtrl.isGrounded)
@@ -206,8 +257,22 @@ public class PlayerControls : MonoBehaviour
             veloY = 0f;
             direction.y = veloY;
         }
+    }
 
-        CharCtrl.Move(direction * Time.deltaTime);
+    private void Fly(ref Vector3 direction)
+    {
+        direction *= 1.5f;
+        if (Input.GetKey(KeyCode.Space))
+        {
+            veloY = 6f;
+            direction.y = veloY;
+        }
+        if (CharCtrl.isGrounded) flying = false;
+        if (Input.GetKey(KeyCode.LeftShift))
+        {
+            veloY = -3f;
+            direction.y = veloY;
+        }
     }
 
     /// <summary>

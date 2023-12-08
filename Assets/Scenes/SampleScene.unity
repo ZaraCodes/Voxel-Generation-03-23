@@ -3747,10 +3747,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   CharCtrl: {fileID: 1939203025569685524}
+  entityCollider: {fileID: 0}
   chunkManager: {fileID: 1340725599}
   generator: {fileID: 1082325506}
   selectedBlock: 1
   PlayerCamera: {fileID: 963194227}
+  gamemode: 1
   moveSpeed: 4
   rotationSpeed: 1
   debugText: {fileID: 1069238891}
