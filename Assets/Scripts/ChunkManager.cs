@@ -118,10 +118,9 @@ public class ChunkManager : MonoBehaviour
 
         viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = false;
         viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(false);
-        if (SettingsManager.Instance.ViewDistance > 7)
-        {
-            SettingsManager.Instance.ViewDistance = 8;
-        }
+
+        SettingsManager.Instance.ViewDistance = 4;
+
         int numberOfSteps = SettingsManager.Instance.ViewArea.Length;
         float step = 0;
         loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);

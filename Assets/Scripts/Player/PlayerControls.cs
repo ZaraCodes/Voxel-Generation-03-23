@@ -114,6 +114,8 @@ public class PlayerControls : MonoBehaviour
         debugText.text += $"X: {Math.Round(transform.position.x, 4).ToString().PadRight(6, '0')}\tY: {Math.Round(transform.position.y, 4).ToString().PadRight(6, '0')}\tZ: {Math.Round(transform.position.z, 4).ToString().PadRight(6, '0')}\n";
         debugText.text += $"Hilliness: {GameManager.Instance.ChunkBuilder.EvaluateHilliness(transform.position)}\n";
         debugText.text += $"World Height: {GameManager.Instance.ChunkBuilder.EvaluateWorldHeight(transform.position)}\n";
+
+        debugText.text += $"Grounded: {CharCtrl.isGrounded}\n";
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
         {
             Vector3Int blockPos;
@@ -233,7 +235,14 @@ public class PlayerControls : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.F))
             {
                 flying = !flying;
-                if (flying) transform.position = new Vector3(transform.position.x, transform.position.y + .1f, transform.position.x);
+                if (flying)
+                {
+                    transform.position = new Vector3(transform.position.x, transform.position.y + .1f, transform.position.x);
+                }
+                else
+                {
+                    veloY = 0f;
+                }
             }
         }
 
@@ -242,7 +251,7 @@ public class PlayerControls : MonoBehaviour
 
     private void Walk(ref Vector3 direction)
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (CharCtrl.isGrounded && Input.GetKeyDown(KeyCode.Space))
         {
             veloY = 5.03f;
             direction.y = veloY;
@@ -254,7 +263,7 @@ public class PlayerControls : MonoBehaviour
         }
         else if (veloY < 0f)
         {
-            veloY = 0f;
+            veloY = -1f;
             direction.y = veloY;
         }
     }
@@ -267,7 +276,11 @@ public class PlayerControls : MonoBehaviour
             veloY = 6f;
             direction.y = veloY;
         }
-        if (CharCtrl.isGrounded) flying = false;
+        if (CharCtrl.isGrounded)
+        {
+            flying = false;
+            veloY = 0f;
+        }
         if (Input.GetKey(KeyCode.LeftShift))
         {
             veloY = -3f;
