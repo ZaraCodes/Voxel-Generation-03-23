@@ -141,8 +141,10 @@ public class PlayerControls : MonoBehaviour
             if (debugText.gameObject.activeInHierarchy)
             {
                 debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
-                SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                debugText.text += $"{targetSubChunk.GetBlock(blockPos).Type}\n";
+                if (hit.collider.TryGetComponent(out SubChunk targetSubChunk) || hit.collider.transform.parent.TryGetComponent(out targetSubChunk))
+                {
+                    debugText.text += $"{targetSubChunk.GetBlock(blockPos).Type}\n";
+                }
             }
             cubeDrawer.CubePosition = blockPos;
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);
@@ -154,8 +156,10 @@ public class PlayerControls : MonoBehaviour
                 if (blockCooldownTimer <= 0)
                 {
                     blockCooldownTimer = breakCooldown;
-                    SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                    targetSubChunk.RemoveBlockAt(blockPos);
+                    if (hit.collider.TryGetComponent(out SubChunk targetSubChunk) || hit.collider.transform.parent.TryGetComponent(out targetSubChunk))
+                    {
+                        targetSubChunk.RemoveBlockAt(blockPos);
+                    }
                 }
                 blockCooldownTimer -= Time.deltaTime;
             }
