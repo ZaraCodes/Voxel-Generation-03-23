@@ -274,9 +274,11 @@ public class ThreadedChunkBuilder
             {
                 for (int z = 0; z < size; z++)
                 {
-                    Block b = new();
-                    // Debug.Log($"{level} {x} {y} {z}");
-                    b.position = new Vector3((int)(rootPos.x + cornerPos.x) + x, (level - yOffset) * size + y, (int)(rootPos.z + cornerPos.z) + z);
+                    Block b = new()
+                    {
+                        // Debug.Log($"{level} {x} {y} {z}");
+                        position = new Vector3((int)(rootPos.x + cornerPos.x) + x, (level - yOffset) * size + y, (int)(rootPos.z + cornerPos.z) + z)
+                    };
                     if (Evaluate3DNoise(b.position)) b.Type = BlockType.Stone;
                     else
                     {
@@ -379,7 +381,11 @@ public class ThreadedChunkBuilder
                     {
                         // If the block above this block is air, then this block is grass
                         AirCheckResult result = AirCheck(chunk, x, y, z, level, height, size, 1, block, BlockType.Grass);
-                        if (result == AirCheckResult.Break) break;
+                        if (result == AirCheckResult.Break)
+                        {
+                            block.Type = BlockType.Grass;
+                            break;
+                        }
                         else if (result == AirCheckResult.Continue) continue;
 
                         // If the block two or three blocks above is air, this block will be dirt
