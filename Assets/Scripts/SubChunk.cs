@@ -15,7 +15,7 @@ public class SubChunk : MonoBehaviour
 
         int level = CalculateLocalBlockPosition(ref blockPos);
 
-        Chunk.UpdateBlock(BlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
+        Chunk.UpdateBlock(EBlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
 
         Chunk[] neighborChunks = new Chunk[]
         {
@@ -82,7 +82,7 @@ public class SubChunk : MonoBehaviour
         ChunkManager.Instance.Generator.GenerateSubChunk(neighborChunk, level, blockAndItsFaces, false);
     }
 
-    public static void AddBlockAt(Vector3Int blockPos, BlockType blockType, Chunk chunk)
+    public static void AddBlockAt(Vector3Int blockPos, EBlockType blockType, Chunk chunk)
     {
         Vector2Int chunkPos = chunk.ChunkPos;
 

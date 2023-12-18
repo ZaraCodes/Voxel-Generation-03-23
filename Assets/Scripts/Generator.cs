@@ -34,11 +34,11 @@ public class Generator : MonoBehaviour
 
     public void GenerateFace(BlockAndItsFaces blockAndItsFaces, List<int> triangles, List<Vector3> vertices, List<Vector2> uvs, ref int vertIdx)
     {
-        foreach (BlockFace direction in blockAndItsFaces.blockFaces)
+        foreach (EBlockFace direction in blockAndItsFaces.blockFaces)
         {
             switch (direction)
             {
-                case BlockFace.Yup:
+                case EBlockFace.Yup:
                     vertices.Add(blockAndItsFaces.position + Vector3.right);
                     vertices.Add(blockAndItsFaces.position + Vector3.forward + Vector3.right);
                     vertices.Add(blockAndItsFaces.position + Vector3.forward);
@@ -52,9 +52,9 @@ public class Generator : MonoBehaviour
                     triangles.Add(vertIdx + 2);
 
                     vertIdx += 4;
-                    
+
                     // fix x and z uwu
-                    if (blockAndItsFaces.blockType == BlockType.Water)
+                    if (blockAndItsFaces.blockType == EBlockType.Water)
                     {
                         Vector2 p = new Vector2(blockAndItsFaces.position.x, blockAndItsFaces.position.z);
 
@@ -66,7 +66,7 @@ public class Generator : MonoBehaviour
                     else
                         uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
                     break;
-                case BlockFace.Ydown:
+                case EBlockFace.Ydown:
                     {
                         Vector3 rootPos = blockAndItsFaces.position + Vector3.down;
                         vertices.Add(rootPos);
@@ -83,7 +83,7 @@ public class Generator : MonoBehaviour
 
                         vertIdx += 4;
 
-                        if (blockAndItsFaces.blockType == BlockType.Water)
+                        if (blockAndItsFaces.blockType == EBlockType.Water)
                         {
                             Vector2 p = new Vector2(rootPos.x, rootPos.z);
 
@@ -96,7 +96,7 @@ public class Generator : MonoBehaviour
                             uvs.AddRange(UVSetter.GetUVs(blockAndItsFaces.blockType, direction));
                         break;
                     }
-                case BlockFace.Xup:
+                case EBlockFace.Xup:
                     {
                         Vector3 rootPos = blockAndItsFaces.position + Vector3.right;
 
@@ -113,7 +113,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        if (blockAndItsFaces.blockType == BlockType.Water)
+                        if (blockAndItsFaces.blockType == EBlockType.Water)
                         {
                             uvs.Add(rootPos);
                             uvs.Add(rootPos + Vector3.down);
@@ -125,7 +125,7 @@ public class Generator : MonoBehaviour
 
                         break;
                     }
-                case BlockFace.Xdown:
+                case EBlockFace.Xdown:
                     {
                         Vector3 rootPos = blockAndItsFaces.position + Vector3.down;
                         vertices.Add(rootPos + Vector3.forward + Vector3.up);
@@ -141,7 +141,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        if (blockAndItsFaces.blockType == BlockType.Water)
+                        if (blockAndItsFaces.blockType == EBlockType.Water)
                         {
                             uvs.Add(rootPos + Vector3.forward + Vector3.up);
                             uvs.Add(rootPos + Vector3.forward);
@@ -153,7 +153,7 @@ public class Generator : MonoBehaviour
 
                         break;
                     }
-                case BlockFace.Zup:
+                case EBlockFace.Zup:
                     {
                         Vector3 rootPos = blockAndItsFaces.position + Vector3.forward + Vector3.down;
 
@@ -170,7 +170,7 @@ public class Generator : MonoBehaviour
                         triangles.Add(vertIdx + 2);
                         vertIdx += 4;
 
-                        if (blockAndItsFaces.blockType == BlockType.Water)
+                        if (blockAndItsFaces.blockType == EBlockType.Water)
                         {
                             uvs.Add(rootPos + Vector3.up + Vector3.right);
                             uvs.Add(rootPos + Vector3.right);
@@ -182,7 +182,7 @@ public class Generator : MonoBehaviour
 
                         break;
                     }
-                case BlockFace.Zdown:
+                case EBlockFace.Zdown:
                     vertices.Add(blockAndItsFaces.position);
                     vertices.Add(blockAndItsFaces.position + Vector3.down);
                     vertices.Add(blockAndItsFaces.position + Vector3.down + Vector3.right);
@@ -196,7 +196,7 @@ public class Generator : MonoBehaviour
                     triangles.Add(vertIdx + 2);
                     vertIdx += 4;
 
-                    if (blockAndItsFaces.blockType == BlockType.Water)
+                    if (blockAndItsFaces.blockType == EBlockType.Water)
                     {
                         uvs.Add(blockAndItsFaces.position);
                         uvs.Add(blockAndItsFaces.position + Vector3.down);
@@ -213,14 +213,7 @@ public class Generator : MonoBehaviour
 
     private IEnumerator PregenerateChunk(Vector3 rootPos, Transform parent, int size, int height)
     {
-        GameObject generatedChunk = new();
-        generatedChunk.transform.parent = parent;
-        generatedChunk.transform.position = rootPos;
-
-        Chunk chunk = generatedChunk.AddComponent<Chunk>();
-        chunk.subChunks = new Block[height, size, size, size];
-        chunk.ChunkPos = new((int)rootPos.x / size, (int)rootPos.z / size);
-        generatedChunk.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y} pregenerated";
+        GenerateChunkObject(rootPos, parent, size, height, out GameObject chunkGO, out Chunk chunk);
 
         Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
 
@@ -231,10 +224,8 @@ public class Generator : MonoBehaviour
         for (int level = 0; level < height; level++)
         {
             GameObject subChunk = new();
-            subChunk.name = "Terrain Geometry";
-            subChunk.transform.parent = generatedChunk.transform;
-            //subChunk.transform.position = new(0, 0, 0); //level * size
-            //yield return null;
+            subChunk.name = $"Level {level}";
+            subChunk.transform.parent = chunkGO.transform;
         }
 
         //if (logPerformance)
@@ -243,7 +234,6 @@ public class Generator : MonoBehaviour
         //    print($"Chunk {chunk.name} Chunk Object Creation: {stopwatch1.Elapsed.Milliseconds}");
         //    stopwatch1.Restart();
         //}
-
         Task[] blockDataTasks = new Task[height];
         for (int level = 0; level < height; level++)
         {
@@ -264,7 +254,26 @@ public class Generator : MonoBehaviour
         yield return WaitForTasks(populationTasks, chunk);
 
         chunk.generationFinished = false;
-        ChunkManager.Instance.AddChunk(chunk.ChunkPos, generatedChunk);
+        ChunkManager.Instance.AddChunk(chunk.ChunkPos, chunkGO);
+    }
+
+    private static void GenerateChunkObject(Vector3 rootPos, Transform parent, int size, int height, out GameObject chunkGO, out Chunk chunk)
+    {
+        chunkGO = new();
+        chunkGO.transform.parent = parent;
+        chunkGO.transform.position = rootPos;
+
+        chunk = chunkGO.AddComponent<Chunk>();
+        chunk.subChunks = new Block[height, size, size, size];
+        chunk.ChunkPos = new((int)rootPos.x / size, (int)rootPos.z / size);
+        chunkGO.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y} pregenerated";
+    }
+
+    public IEnumerator GenerateChunkFromFile(Vector3 rootPos, Transform parent, int size, int height)
+    {
+        GenerateChunkObject(rootPos, parent, size, height, out GameObject chunkGO, out Chunk chunk);
+        yield return null;
+        // todo
     }
 
     public IEnumerator GenerateChunk(Vector3 rootPos, Transform parent, int size, int height, System.Action<GameObject> callback)
@@ -275,7 +284,7 @@ public class Generator : MonoBehaviour
         Stopwatch stopwatch1 = new();
         if (logPerformance)
             stopwatch1.Start();
-        
+
         if (generatedChunk == null)
         {
             yield return PregenerateChunk(rootPos, parent, size, height);
@@ -323,12 +332,12 @@ public class Generator : MonoBehaviour
         };
         List<BlockAndItsFaces>[] chunkData = new List<BlockAndItsFaces>[height];
         Task[] blockSidesTasks = new Task[height];
-        
+
         for (int level = 0; level < height; level++)
         {
             blockSidesTasks[level] = threadedChunkBuilder.StartBuildBlockSides(chunk, neighborChunkObjects, chunkData, level, size, height);
         }
-        
+
         yield return WaitForTasks(blockSidesTasks, chunk);
         // Task.WaitAll(blockSidesTasks);
         if (logPerformance)
@@ -375,7 +384,7 @@ public class Generator : MonoBehaviour
 
             waterObject = new GameObject("Water Meshes");
             waterObject.transform.parent = subChunk.transform;
-            
+
             terrainMeshRenderer = subChunk.AddComponent<MeshRenderer>();
             terrainMeshFilter = subChunk.AddComponent<MeshFilter>();
             terrainMeshCollider = subChunk.AddComponent<MeshCollider>();
@@ -391,7 +400,7 @@ public class Generator : MonoBehaviour
         else
         {
             waterObject = subChunk.transform.GetChild(0).gameObject;
-            
+
             terrainMeshRenderer = subChunk.GetComponent<MeshRenderer>();
             terrainMeshFilter = subChunk.GetComponent<MeshFilter>();
             terrainMeshCollider = subChunk.GetComponent<MeshCollider>();
@@ -414,7 +423,7 @@ public class Generator : MonoBehaviour
         // int loopIdx = 0;
         foreach (BlockAndItsFaces blockData in subChunkBlockData)
         {
-            if (blockData.blockType == BlockType.Water)
+            if (blockData.blockType == EBlockType.Water)
                 GenerateFace(blockData, waterTris, waterVerts, WaterUvs, ref waterVertIdx);
             else
                 GenerateFace(blockData, triangles, vertices, uvs, ref vertIdx);
@@ -466,7 +475,7 @@ public class Generator : MonoBehaviour
     }
 }
 
-public enum BlockFace
+public enum EBlockFace
 {
     Yup, Ydown, Xup, Xdown, Zup, Zdown
 }
@@ -474,7 +483,7 @@ public enum BlockFace
 public struct BlockAndItsFaces
 {
     public Vector3 position;
-    public BlockFace[] blockFaces;
-    public BlockType blockType;
+    public EBlockFace[] blockFaces;
+    public EBlockType blockType;
 }
 

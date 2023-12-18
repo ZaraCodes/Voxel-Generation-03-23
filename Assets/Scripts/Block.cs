@@ -1,45 +1,44 @@
-using System.Collections;
-using System.Collections.Generic;
+using System;
 using UnityEngine;
 
+[Serializable]
 public class Block
 {
-    private BlockType type = BlockType.Stone;
-    public BlockType Type
+    private EBlockType type = EBlockType.Stone;
+    public EBlockType Type
     {
         get { return type; }
-        set {
+        set
+        {
             type = value;
             switch (type)
             {
-                case BlockType.Stone:
-                    RenderType = BlockRenderType.Solid; break;
-                case BlockType.Air:
-                    RenderType = BlockRenderType.Air; break;
-                case BlockType.Dirt:
-                    RenderType = BlockRenderType.Solid; break;
-                case BlockType.Grass:
-                    RenderType = BlockRenderType.Solid; break;
-                case BlockType.WoodPlanks:
-                    RenderType = BlockRenderType.Solid; break;
-                case BlockType.Water:
-                    RenderType = BlockRenderType.Transparent; break;
-                case BlockType.WoodLog:
-                    RenderType = BlockRenderType.Solid; break;
-                case BlockType.Leafes:
-                    RenderType = BlockRenderType.Transparent2; break;
+                case EBlockType.Stone:
+                    RenderType = EBlockRenderType.Solid; break;
+                case EBlockType.Air:
+                    RenderType = EBlockRenderType.Air; break;
+                case EBlockType.Dirt:
+                    RenderType = EBlockRenderType.Solid; break;
+                case EBlockType.Grass:
+                    RenderType = EBlockRenderType.Solid; break;
+                case EBlockType.WoodPlanks:
+                    RenderType = EBlockRenderType.Solid; break;
+                case EBlockType.Water:
+                    RenderType = EBlockRenderType.Transparent; break;
+                case EBlockType.WoodLog:
+                    RenderType = EBlockRenderType.Solid; break;
+                case EBlockType.Leafes:
+                    RenderType = EBlockRenderType.Transparent2; break;
             }
         }
     }
 
-    public Vector3 position = Vector3.zero;
+    public Vector3 Position { get; set; }
 
-    public BlockRenderType RenderType = BlockRenderType.Solid;
-
-
+    public EBlockRenderType RenderType = EBlockRenderType.Solid;
 }
 
-public enum BlockType
+public enum EBlockType
 {
     Air,
     Stone,
@@ -51,7 +50,7 @@ public enum BlockType
     Leafes
 }
 
-public enum BlockRenderType
+public enum EBlockRenderType
 {
     Solid,
     Transparent,

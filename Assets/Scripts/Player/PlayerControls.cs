@@ -13,7 +13,7 @@ public class PlayerControls : MonoBehaviour
     private BoxCollider entityCollider;
     [SerializeField] private ChunkManager chunkManager;
     [SerializeField] private Generator generator;
-    [SerializeField] private BlockType selectedBlock;
+    [SerializeField] private EBlockType selectedBlock;
     /// <summary>
     /// Reference to the input system class
     /// </summary>
@@ -315,7 +315,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Stone;
+            selectedBlock = EBlockType.Stone;
         }
     }
 
@@ -323,7 +323,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Dirt;
+            selectedBlock = EBlockType.Dirt;
         }
     }
 
@@ -331,7 +331,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Grass;
+            selectedBlock = EBlockType.Grass;
         }
     }
 
@@ -339,7 +339,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.WoodPlanks;
+            selectedBlock = EBlockType.WoodPlanks;
         }
     }
 
@@ -347,7 +347,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.WoodLog;
+            selectedBlock = EBlockType.WoodLog;
         }
     }
 
@@ -355,7 +355,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Leafes;
+            selectedBlock = EBlockType.Leafes;
         }
     }
 

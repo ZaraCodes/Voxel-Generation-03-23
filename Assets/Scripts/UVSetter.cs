@@ -5,35 +5,35 @@ using UnityEngine;
 public class UVSetter : MonoBehaviour
 {
     private static float offset = 0.001f;
-    public static Vector2[] GetUVs(BlockType blockType, BlockFace blockFace)
+    public static Vector2[] GetUVs(EBlockType blockType, EBlockFace blockFace)
     {
         switch (blockType)
         {
-            case BlockType.Grass:
+            case EBlockType.Grass:
                 return GetTopOrientedBlockUVs(blockFace, TileType.Grass, TileType.Dirt, TileType.GrassSide);
-            case BlockType.Dirt:
+            case EBlockType.Dirt:
                 return SetUVs(TileType.Dirt);
-            case BlockType.Stone:
+            case EBlockType.Stone:
                 return SetUVs(TileType.Stone);
-            case BlockType.WoodPlanks:
+            case EBlockType.WoodPlanks:
                 return SetUVs(TileType.WoodPlanks);
-            case BlockType.Water:
+            case EBlockType.Water:
                 return SetUVs(TileType.Water);
-            case BlockType.WoodLog:
+            case EBlockType.WoodLog:
                 return GetTopOrientedBlockUVs(blockFace, TileType.WoodLogTop, TileType.WoodLogTop, TileType.WoodLogSide);
-            case BlockType.Leafes:
+            case EBlockType.Leafes:
                 return SetUVs(TileType.Leaves);
         }
         return new Vector2[0];
     }
 
-    private static Vector2[] GetTopOrientedBlockUVs(BlockFace blockFace, TileType topTile, TileType bottomTile, TileType sidesTile)
+    private static Vector2[] GetTopOrientedBlockUVs(EBlockFace blockFace, TileType topTile, TileType bottomTile, TileType sidesTile)
     {
         switch (blockFace)
         {
-            case BlockFace.Yup:
+            case EBlockFace.Yup:
                 return SetUVs(topTile);
-            case BlockFace.Ydown:
+            case EBlockFace.Ydown:
                 return SetUVs(bottomTile);
             default:
                 return SetUVs(sidesTile);

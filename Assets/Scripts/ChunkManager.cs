@@ -20,7 +20,6 @@ public class ChunkManager : MonoBehaviour
 
     /// <summary>Reference to the generator</summary>
     [SerializeField] private Generator generator;
-
     public Generator Generator { get { return generator; } }
 
     /// <summary>Reference to the viewer transform which is used to determine the active chunks</summary>
@@ -83,10 +82,12 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].chunkObj.GetComponent<Chunk>().generationFinished)
+                if (SaveManager.DoesChunkExist(currChunkCoord)) {
+                    SaveManager.LoadChunk();
+                }
+                else if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].ChunkObj.GetComponent<Chunk>().generationFinished)
                 {
                     Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
-                    // GameObject newChunkObj = generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight);
                     GameObject newChunkObj = null;
                     yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight, returnValue =>
                     {
@@ -101,6 +102,9 @@ public class ChunkManager : MonoBehaviour
         foreach (Vector2Int chunkInx in activeChunks)
         {
             allChunkDic[chunkInx].SetVisibility(false);
+            Chunk chunk = allChunkDic[chunkInx].ChunkObj.GetComponent<Chunk>();
+            SaveManager.SaveChunk(chunk);
+            //allChunkDic.Remove(chunkInx);
         }
         activeChunks = newActiveChunks;
         updatingChunks = false;
@@ -148,12 +152,12 @@ public class ChunkManager : MonoBehaviour
                 for (int y = 15; y >= 0; y--)
                 {
                     Block block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
-                    if (block != null && block.Type != BlockType.Air)
+                    if (block != null && block.Type != EBlockType.Air)
                     {
                         breaking = true;
 
                         // changes the player position
-                        viewerTransform.parent.position = new(block.position.x + 0.5f, block.position.y, block.position.z + 0.5f);
+                        viewerTransform.parent.position = new(block.Position.x + 0.5f, block.Position.y, block.Position.z + 0.5f);
                         viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = true;
                         viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(true);
                         break;
@@ -176,7 +180,7 @@ public class ChunkManager : MonoBehaviour
     {
         if (allChunkDic.TryGetValue(chunkPos, out var chunk))
         {
-            return chunk.chunkObj;
+            return chunk.ChunkObj;
         }
         return null;
     }
@@ -196,25 +200,24 @@ public class ChunkManager : MonoBehaviour
     private class ChunkPrivate
     {
         /// <summary>The Chunk GameObject</summary>
-        public GameObject chunkObj;
+        public GameObject ChunkObj;
 
         /// <summary>Position of the chunk</summary>
-        public Vector3 position;
-        private Vector3 Position => position;
+        public Vector3 Position;
 
         /// <summary>Constructor of this Class</summary>
         /// <param name="chunkObj">The Chunk GameObject</param>
         public ChunkPrivate(GameObject chunkObj)
         {
-            this.chunkObj = chunkObj;
-            position = chunkObj.transform.position;
+            this.ChunkObj = chunkObj;
+            Position = chunkObj.transform.position;
         }
 
         /// <summary>Makes a chunk visible or invisible</summary>
         /// <param name="isVisible">bool that sets this chunk's visibility</param>
         public void SetVisibility(bool isVisible)
         {
-            chunkObj.SetActive(isVisible);
+            ChunkObj.SetActive(isVisible);
         }
     }
 
@@ -244,7 +247,7 @@ public class ChunkManager : MonoBehaviour
             foreach (KeyValuePair<Vector2Int, ChunkPrivate> entry in allChunkDic)
             {
                 ChunkPrivate c = entry.Value;
-                Gizmos.DrawWireCube(c.position, new Vector3(chunkSize, 0, chunkSize));
+                Gizmos.DrawWireCube(c.Position, new Vector3(chunkSize, 0, chunkSize));
             }
         }
     }
