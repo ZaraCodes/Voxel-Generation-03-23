@@ -82,7 +82,7 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                if (SaveManager.DoesChunkExist(currChunkCoord)) {
+                if (false && SaveManager.DoesChunkExist(currChunkCoord)) {
                     SaveManager.LoadChunk();
                 }
                 else if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].ChunkObj.GetComponent<Chunk>().generationFinished)
@@ -157,7 +157,7 @@ public class ChunkManager : MonoBehaviour
                         breaking = true;
 
                         // changes the player position
-                        viewerTransform.parent.position = new(block.Position.x + 0.5f, block.Position.y, block.Position.z + 0.5f);
+                        viewerTransform.parent.position = new(.5f, level * chunkSize + y - chunkOffsetY * chunkSize, .5f);
                         viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = true;
                         viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(true);
                         break;
@@ -171,6 +171,7 @@ public class ChunkManager : MonoBehaviour
         GameManager.Instance.IsLoading = false;
     }
 
+    public int GetBlockY(int level, int y) => (int) (level * chunkSize + y - chunkOffsetY * chunkSize);
     public Vector2Int GetChunkCoordinate(Vector3 position)
     {
         return new(Mathf.RoundToInt(position.x / chunkSize + 0.01f), Mathf.RoundToInt(position.z / chunkSize + 0.01f));
