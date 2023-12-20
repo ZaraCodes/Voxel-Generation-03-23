@@ -157,7 +157,7 @@ public class ChunkManager : MonoBehaviour
                         breaking = true;
 
                         // changes the player position
-                        viewerTransform.parent.position = new(.5f, level * chunkSize + y - chunkOffsetY * chunkSize, .5f);
+                        viewerTransform.parent.position = new(.5f, GetBlockY(level, y), .5f);
                         viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = true;
                         viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(true);
                         break;

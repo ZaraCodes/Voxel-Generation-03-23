@@ -33,8 +33,6 @@ public class Block
         }
     }
 
-    public Vector3 Position { get; set; }
-
     public EBlockRenderType RenderType = EBlockRenderType.Solid;
 }
 

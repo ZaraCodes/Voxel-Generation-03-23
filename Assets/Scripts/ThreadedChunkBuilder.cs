@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering;
 
@@ -61,23 +62,26 @@ public class ThreadedChunkBuilder
             {
                 for (int k = 0; k < size; k++)
                 {
+                    // calculate block position
+                    int blockY = ChunkManager.Instance.GetBlockY(level, j);
+                    Vector3 blockPosition = new(chunk.GetBlockX(i), blockY, chunk.GetBlockZ(k));
                     Block block = chunk.subChunks[level, i, j, k];
                     if (block.RenderType == EBlockRenderType.Air) continue;
                     List<EBlockFace> faces = new();
 
                     foreach ((int, int, int) blockSide in blockSides)
                     {
-                        if (block.Position.y + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
+                        if (blockY + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        else if (block.Position.y + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
+                        else if (blockY + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        int lookupY = ((int)block.Position.y + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
+                        int lookupY = (blockY + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
@@ -123,7 +127,7 @@ public class ThreadedChunkBuilder
                     }
                     BlockAndItsFaces blockAndItsFaces = new()
                     {
-                        position = block.Position,
+                        position = blockPosition,
                         blockFaces = faces.ToArray(),
                         blockType = block.Type,
                     };
@@ -163,23 +167,27 @@ public class ThreadedChunkBuilder
                 for (int k = 0; k < size; k++)
                 {
                     Block block = chunk.subChunks[level, i, j, k];
+                    int blockY = ChunkManager.Instance.GetBlockY(level, j);
+                    Vector3 blockPosition = new(chunk.GetBlockX(i), blockY, chunk.GetBlockZ(k));
+
+
                     //if (block.Type == BlockType.Air) continue;
                     if (block.RenderType == EBlockRenderType.Air) continue;
                     List<EBlockFace> faces = new();
 
                     foreach ((int, int, int) blockSide in blockSides)
                     {
-                        if (block.Position.y + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
+                        if (blockY + blockSide.Item2 < -ChunkManager.Instance.chunkOffsetY * size)
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        else if (block.Position.y + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
+                        else if (blockY + blockSide.Item2 >= size * (height - ChunkManager.Instance.chunkOffsetY))
                         {
                             AddBlockFace(faces, blockSide);
                             continue;
                         }
-                        int lookupY = ((int)block.Position.y + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
+                        int lookupY = (blockY + blockSide.Item2) / size + ChunkManager.Instance.chunkOffsetY;
 
                         if (lookupY < 0 || lookupY >= chunk.subChunks.Length) continue;
 
@@ -249,7 +257,7 @@ public class ThreadedChunkBuilder
                     }
                     BlockAndItsFaces blockAndItsFaces = new()
                     {
-                        position = block.Position,
+                        position = blockPosition,
                         blockFaces = faces.ToArray(),
                         blockType = block.Type,
                     };
@@ -274,15 +282,12 @@ public class ThreadedChunkBuilder
             {
                 for (int z = 0; z < size; z++)
                 {
-                    Block b = new()
-                    {
-                        // Debug.Log($"{level} {x} {y} {z}");
-                        Position = new Vector3((int)(rootPos.x + cornerPos.x) + x, (level - yOffset) * size + y, (int)(rootPos.z + cornerPos.z) + z)
-                    };
-                    if (Evaluate3DNoise(b.Position)) b.Type = EBlockType.Stone;
+                    Block b = new();
+                    Vector3 blockPosition = new(chunk.GetBlockX(x), ChunkManager.Instance.GetBlockY(level, y), chunk.GetBlockZ(z));
+                    if (Evaluate3DNoise(blockPosition)) b.Type = EBlockType.Stone;
                     else
                     {
-                        if (b.Position.y <= 0)
+                        if (blockPosition.y <= 0)
                         {
                             b.RenderType = EBlockRenderType.Transparent;
                             b.Type = EBlockType.Water;

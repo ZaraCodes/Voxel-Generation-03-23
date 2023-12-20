@@ -264,6 +264,8 @@ public class Generator : MonoBehaviour
         chunkGO.transform.position = rootPos;
 
         chunk = chunkGO.AddComponent<Chunk>();
+        chunk.Transform = chunkGO.transform;
+        chunk.Position = chunk.Transform.position;
         chunk.subChunks = new Block[height, size, size, size];
         chunk.ChunkPos = new((int)rootPos.x / size, (int)rootPos.z / size);
         chunkGO.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y} pregenerated";
@@ -368,7 +370,7 @@ public class Generator : MonoBehaviour
     public void GenerateSubChunk(Chunk chunk, int level, List<BlockAndItsFaces> subChunkBlockData, bool chunkGeneration = true)
     {
         GameObject subChunk = chunk.transform.GetChild(level).gameObject;
-        GameObject waterObject = null;
+        GameObject waterObject;
 
         MeshRenderer terrainMeshRenderer;
         MeshFilter terrainMeshFilter;
