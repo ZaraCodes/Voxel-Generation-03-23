@@ -21,7 +21,7 @@ public static class SaveManager
 
                 string state = string.Empty;
                 state += $"pos={chunk.gameObject.transform.position}\n";
-                state += $"width={ChunkManager.Instance.width}\n";
+                state += $"width={ChunkManager.Instance.Width}\n";
                 state += $"height={ChunkManager.Instance.chunkHeight}\n";
                 state += $"blocks=";
                 foreach (var block in chunk.subChunks)

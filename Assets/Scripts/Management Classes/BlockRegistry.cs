@@ -17,6 +17,7 @@ public class BlockRegistry
         AddBlock(EBlockType.WoodPlanks, EBlockRenderType.Solid);
         AddBlock(EBlockType.WoodLog, EBlockRenderType.Solid);
         AddBlock(EBlockType.Leafes, EBlockRenderType.Transparent);
+        AddBlock(EBlockType.Bedrock, EBlockRenderType.Solid);
     }
 
     public void AddBlock(EBlockType b, EBlockRenderType t)

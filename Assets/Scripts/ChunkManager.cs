@@ -36,7 +36,7 @@ public class ChunkManager : MonoBehaviour
 
     public int chunkOffsetY;
 
-    public int width;
+    public int Width { get; private set; }
 
     public int chunkHeight;
 
@@ -89,7 +89,7 @@ public class ChunkManager : MonoBehaviour
                 {
                     Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
                     GameObject newChunkObj = null;
-                    yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight, returnValue =>
+                    yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, Width, chunkHeight, returnValue =>
                     {
                         newChunkObj = returnValue;
                     }));
@@ -135,7 +135,7 @@ public class ChunkManager : MonoBehaviour
             loadingText.text = $"Generating Chunks... {(int)(step * 100 / numberOfSteps)}%";
             loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);
             GameObject newChunkObj = null;
-            yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
+            yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, Width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
             if (!allChunkDic.ContainsKey(pos))
                 allChunkDic.Add(pos, new ChunkPrivate(newChunkObj));
             activeChunks.Add(pos);
@@ -151,7 +151,7 @@ public class ChunkManager : MonoBehaviour
                 bool breaking = false;
                 for (int y = 15; y >= 0; y--)
                 {
-                    var block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
+                    var block = spawnChunk.GetBlock(level, Width / 2, y, Width / 2);
                     if (block != null && block != EBlockType.Air)
                     {
                         breaking = true;
@@ -226,7 +226,7 @@ public class ChunkManager : MonoBehaviour
     {
         allChunkDic = new Dictionary<Vector2Int, ChunkPrivate>();
         activeChunks = new List<Vector2Int>();
-        width = (int)chunkSize;
+        Width = (int)chunkSize;
         SettingsManager.Instance.ViewDistance = renderDistance;
         StartCoroutine(CreateSpawnArea());
         // generator.GenerateChunk(new(0, 0, 0), transform);

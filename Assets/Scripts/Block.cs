@@ -6,6 +6,7 @@ public enum EBlockType
     Air,
     Stone,
     Water,
+    Bedrock,
     Dirt,
     Grass,
     WoodPlanks,

@@ -380,6 +380,15 @@ public class ThreadedChunkBuilder
             {
                 for (int z = 0; z < size; z++)
                 {
+                    if (level == 0 && y < 5)  // bedrock pattern
+                    {
+                        float val = baseNoise.Evaluate(new Vector3(chunk.Position.x + x, y * 100, chunk.Position.z + z));
+                        if (((val + 1f) / 2f) * ((val + 1f) / 2f) > y / 5f)
+                        {
+                            chunk.subChunks[level, x, y, z] = EBlockType.Bedrock;
+                            continue;
+                        }
+                    }
                     var block = chunk.subChunks[level, x, y, z];
                     if (block == EBlockType.Stone)
                     {

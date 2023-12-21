@@ -23,6 +23,8 @@ public class UVSetter : MonoBehaviour
                 return GetTopOrientedBlockUVs(blockFace, TileType.WoodLogTop, TileType.WoodLogTop, TileType.WoodLogSide);
             case EBlockType.Leafes:
                 return SetUVs(TileType.Leaves);
+            case EBlockType.Bedrock:
+                return SetUVs(TileType.Bedrock);
         }
         return new Vector2[0];
     }
@@ -59,6 +61,7 @@ public class UVSetter : MonoBehaviour
         { TileType.GrassSide, new Vector2(3, 0) / 32 },
         { TileType.WoodPlanks, new Vector2(4, 0) / 32 },
         { TileType.Water, new Vector2(5, 0) / 32 },
+        { TileType.Bedrock, new Vector2(5, 0) / 32 },
         { TileType.WoodLogSide, new Vector2(6, 0) / 32 },
         { TileType.WoodLogTop, new Vector2(7, 0) / 32 },
         { TileType.Leaves, new Vector2(8, 0) / 32 }
@@ -75,5 +78,6 @@ public enum TileType
     WoodPlanks,
     WoodLogSide,
     WoodLogTop,
-    Leaves
+    Leaves,
+    Bedrock,
 }
