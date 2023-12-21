@@ -143,7 +143,7 @@ public class PlayerControls : MonoBehaviour
                 debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
                 if (hit.collider.TryGetComponent(out SubChunk targetSubChunk) || hit.collider.transform.parent.TryGetComponent(out targetSubChunk))
                 {
-                    debugText.text += $"{targetSubChunk.GetBlock(blockPos).Type}\n";
+                    debugText.text += $"{targetSubChunk.GetBlock(blockPos)}\n";
                 }
             }
             cubeDrawer.CubePosition = blockPos;

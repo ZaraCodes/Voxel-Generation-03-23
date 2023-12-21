@@ -151,8 +151,8 @@ public class ChunkManager : MonoBehaviour
                 bool breaking = false;
                 for (int y = 15; y >= 0; y--)
                 {
-                    Block block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
-                    if (block != null && block.Type != EBlockType.Air)
+                    var block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
+                    if (block != null && block != EBlockType.Air)
                     {
                         breaking = true;
 

@@ -56,6 +56,7 @@ public class ThreadedChunkBuilder
     public void BuildBlockSides(Chunk chunk, Chunk[] neighborChunks, List<BlockAndItsFaces>[] chunkData, int level, int size, int height, bool chunkGeneration = true)
     {
         List<BlockAndItsFaces> subChunkData = new();
+        var blockRegistry = GameManager.Instance.BlockRegistry;
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
@@ -65,8 +66,8 @@ public class ThreadedChunkBuilder
                     // calculate block position
                     int blockY = ChunkManager.Instance.GetBlockY(level, j);
                     Vector3 blockPosition = new(chunk.GetBlockX(i), blockY, chunk.GetBlockZ(k));
-                    Block block = chunk.subChunks[level, i, j, k];
-                    if (block.RenderType == EBlockRenderType.Air) continue;
+                    var block = chunk.subChunks[level, i, j, k];
+                    if (blockRegistry.GetRenderType(block) == EBlockRenderType.Air) continue;
                     List<EBlockFace> faces = new();
 
                     foreach ((int, int, int) blockSide in blockSides)
@@ -87,7 +88,7 @@ public class ThreadedChunkBuilder
 
                         if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
-                            Block neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
+                            var neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
                             if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                         }
                         // only execute this if this method gets called during chunk generation
@@ -95,32 +96,32 @@ public class ThreadedChunkBuilder
                         {
                             if (i + blockSide.Item1 == size)
                             {
-                                Block neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
+                                var neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                             else if (i + blockSide.Item1 == -1)
                             {
-                                Block neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
+                                var neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                             else if (j + blockSide.Item2 == size)
                             {
-                                Block neighborBlock = chunk.GetBlock(level + 1, i + blockSide.Item1, 0, k + blockSide.Item3);
-                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                                var neighborBlock = chunk.GetBlock(level + 1, i + blockSide.Item1, 0, k + blockSide.Item3);
+                                if (neighborBlock != null && CheckBlockBorder(block, (EBlockType) neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                             else if (j + blockSide.Item2 == -1)
                             {
-                                Block neighborBlock = chunk.GetBlock(level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3);
-                                if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
+                                var neighborBlock = chunk.GetBlock(level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3);
+                                if (neighborBlock != null && CheckBlockBorder(block, (EBlockType) neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                             else if (k + blockSide.Item3 == size)
                             {
-                                Block neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
+                                var neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                             else if (k + blockSide.Item3 == -1)
                             {
-                                Block neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
+                                var neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                             }
                         }
@@ -129,7 +130,7 @@ public class ThreadedChunkBuilder
                     {
                         position = blockPosition,
                         blockFaces = faces.ToArray(),
-                        blockType = block.Type,
+                        blockType = block,
                     };
                     subChunkData.Add(blockAndItsFaces);
                 }
@@ -139,13 +140,13 @@ public class ThreadedChunkBuilder
         else chunkData[0] = subChunkData;
     }
 
-    private static bool CheckBlockBorder(Block block, Block neighborBlock)
+    private static bool CheckBlockBorder(EBlockType block, EBlockType neighborBlock)
     {
-        if (neighborBlock == null) return false;
-        return block.RenderType == EBlockRenderType.Solid && (neighborBlock.RenderType != EBlockRenderType.Solid) ||
-            block.RenderType == EBlockRenderType.Transparent && neighborBlock.RenderType == EBlockRenderType.Air ||
-            block.RenderType == EBlockRenderType.Transparent && ((neighborBlock.RenderType == EBlockRenderType.Transparent && block.Type != neighborBlock.Type) || neighborBlock.RenderType == EBlockRenderType.Transparent2) ||
-            block.RenderType == EBlockRenderType.Transparent2;
+        var br = GameManager.Instance.BlockRegistry;
+        return br.GetRenderType(block) == EBlockRenderType.Solid && (br.GetRenderType(neighborBlock) != EBlockRenderType.Solid) ||
+            br.GetRenderType(block) == EBlockRenderType.Water && br.GetRenderType(neighborBlock) == EBlockRenderType.Air ||
+            br.GetRenderType(block) == EBlockRenderType.Water && ((br.GetRenderType(neighborBlock) == EBlockRenderType.Water && block != neighborBlock) || br.GetRenderType(neighborBlock) == EBlockRenderType.Transparent) ||
+            br.GetRenderType(block) == EBlockRenderType.Transparent;
     }
 
     /// <summary>
@@ -166,13 +167,13 @@ public class ThreadedChunkBuilder
             {
                 for (int k = 0; k < size; k++)
                 {
-                    Block block = chunk.subChunks[level, i, j, k];
-                    int blockY = ChunkManager.Instance.GetBlockY(level, j);
+                    var block = chunk.subChunks[level, i, j, k];
+                    var blockY = ChunkManager.Instance.GetBlockY(level, j);
                     Vector3 blockPosition = new(chunk.GetBlockX(i), blockY, chunk.GetBlockZ(k));
 
 
                     //if (block.Type == BlockType.Air) continue;
-                    if (block.RenderType == EBlockRenderType.Air) continue;
+                    if (GameManager.Instance.BlockRegistry.GetRenderType(block) == EBlockRenderType.Air) continue;
                     List<EBlockFace> faces = new();
 
                     foreach ((int, int, int) blockSide in blockSides)
@@ -193,14 +194,14 @@ public class ThreadedChunkBuilder
 
                         if (i + blockSide.Item1 < size && j + blockSide.Item2 < size && k + blockSide.Item3 < size && i + blockSide.Item1 != -1 && j + blockSide.Item2 != -1 && k + blockSide.Item3 != -1)
                         {
-                            Block neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
+                            var neighborBlock = chunk.subChunks[level, i + blockSide.Item1, j + blockSide.Item2, k + blockSide.Item3];
                             if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                         }
                         else
                         {
                             if (j + blockSide.Item2 == -1 && level != 0)
                             {
-                                Block neighborBlock = chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3];
+                                var neighborBlock = chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (chunk.subChunks[level - 1, i + blockSide.Item1, size - 1, k + blockSide.Item3].Type == BlockType.Air)
                                 //    {
@@ -209,7 +210,7 @@ public class ThreadedChunkBuilder
                             }
                             else if (j + blockSide.Item2 == size && level != height)
                             {
-                                Block neighborBlock = chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3];
+                                var neighborBlock = chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (chunk.subChunks[level + 1, i + blockSide.Item1, 0, k + blockSide.Item3].Type == BlockType.Air)
                                 //{
@@ -219,7 +220,7 @@ public class ThreadedChunkBuilder
                             // 0: x+  1: x-  2: z+  3: z-
                             if (i + blockSide.Item1 == size)
                             {
-                                Block neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
+                                var neighborBlock = neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (neighborChunks[0].subChunks[level, 0, j + blockSide.Item2, k + blockSide.Item3].Type == BlockType.Air)
                                 //{
@@ -228,7 +229,7 @@ public class ThreadedChunkBuilder
                             }
                             else if (i + blockSide.Item1 == -1)
                             {
-                                Block neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
+                                var neighborBlock = neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (neighborChunks[1].subChunks[level, size - 1, j + blockSide.Item2, k + blockSide.Item3].Type == BlockType.Air)
                                 //{
@@ -237,7 +238,7 @@ public class ThreadedChunkBuilder
                             }
                             else if (k + blockSide.Item3 == size)
                             {
-                                Block neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
+                                var neighborBlock = neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (neighborChunks[2].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, 0].Type == BlockType.Air)
                                 //{
@@ -246,7 +247,7 @@ public class ThreadedChunkBuilder
                             }
                             else if (k + blockSide.Item3 == -1)
                             {
-                                Block neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
+                                var neighborBlock = neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1];
                                 if (CheckBlockBorder(block, neighborBlock)) AddBlockFace(faces, blockSide);
                                 //if (neighborChunks[3].subChunks[level, i + blockSide.Item1, j + blockSide.Item2, size - 1].Type == BlockType.Air)
                                 //{
@@ -259,7 +260,7 @@ public class ThreadedChunkBuilder
                     {
                         position = blockPosition,
                         blockFaces = faces.ToArray(),
-                        blockType = block.Type,
+                        blockType = block,
                     };
                     subChunkData.Add(blockAndItsFaces);
                 }
@@ -282,20 +283,18 @@ public class ThreadedChunkBuilder
             {
                 for (int z = 0; z < size; z++)
                 {
-                    Block b = new();
+                    EBlockType b;
                     Vector3 blockPosition = new(chunk.GetBlockX(x), ChunkManager.Instance.GetBlockY(level, y), chunk.GetBlockZ(z));
-                    if (Evaluate3DNoise(blockPosition)) b.Type = EBlockType.Stone;
+                    if (Evaluate3DNoise(blockPosition)) b = EBlockType.Stone;
                     else
                     {
                         if (blockPosition.y <= 0)
                         {
-                            b.RenderType = EBlockRenderType.Transparent;
-                            b.Type = EBlockType.Water;
+                            b = EBlockType.Water;
                         }
                         else
                         {
-                            b.Type = EBlockType.Air;
-                            b.RenderType = EBlockRenderType.Air;
+                            b = EBlockType.Air;
                         }
                     }
                     chunk.subChunks[level, x, y, z] = b;
@@ -381,26 +380,38 @@ public class ThreadedChunkBuilder
             {
                 for (int z = 0; z < size; z++)
                 {
-                    Block block = chunk.subChunks[level, x, y, z];
-                    if (block.Type == EBlockType.Stone)
+                    var block = chunk.subChunks[level, x, y, z];
+                    if (block == EBlockType.Stone)
                     {
                         // If the block above this block is air, then this block is grass
-                        AirCheckResult result = AirCheck(chunk, x, y, z, level, height, size, 1, block, EBlockType.Grass);
+                        AirCheckResult result = AirCheck(chunk, x, y, z, level, height, size, 1);
                         if (result == AirCheckResult.Break)
                         {
-                            block.Type = EBlockType.Grass;
+                            chunk.subChunks[level, x, y, z] = EBlockType.Grass;
                             break;
                         }
-                        else if (result == AirCheckResult.Continue) continue;
+                        else if (result == AirCheckResult.Continue)
+                        {
+                            chunk.subChunks[level, x, y, z] = EBlockType.Grass;
+                            continue;
+                        }
 
                         // If the block two or three blocks above is air, this block will be dirt
-                        result = AirCheck(chunk, x, y, z, level, height, size, 2, block, EBlockType.Dirt);
+                        result = AirCheck(chunk, x, y, z, level, height, size, 2);
                         if (result == AirCheckResult.Break) break;
-                        else if (result == AirCheckResult.Continue) continue;
+                        else if (result == AirCheckResult.Continue)
+                        {
+                            chunk.subChunks[level, x, y, z] = EBlockType.Dirt;
+                            continue;
+                        }
 
-                        result = AirCheck(chunk, x, y, z, level, height, size, 3, block, EBlockType.Dirt);
+                        result = AirCheck(chunk, x, y, z, level, height, size, 3);
                         if (result == AirCheckResult.Break) break;
-                        else if (result == AirCheckResult.Continue) continue;
+                        else if (result == AirCheckResult.Continue)
+                        {
+                            chunk.subChunks[level, x, y, z] = EBlockType.Dirt;
+                            continue;
+                        }
                     }
                 }
             }
@@ -426,7 +437,7 @@ public class ThreadedChunkBuilder
         }
     }
 
-    private AirCheckResult AirCheck(Chunk chunk, int x, int y, int z, int levelIdx, int height, int size, int offset, Block block, EBlockType replacement)
+    private AirCheckResult AirCheck(Chunk chunk, int x, int y, int z, int levelIdx, int height, int size, int offset)
     {
         int ycheck = y + offset;
         if (ycheck >= size)
@@ -438,10 +449,9 @@ public class ThreadedChunkBuilder
                 return AirCheckResult.Break;
             }
         }
-        Block blockToCheck = chunk.subChunks[levelIdx, x, ycheck, z];
-        if (blockToCheck.Type == EBlockType.Air)
+        var blockToCheck = chunk.subChunks[levelIdx, x, ycheck, z];
+        if (blockToCheck == EBlockType.Air)
         {
-            block.Type = replacement;
             return AirCheckResult.Continue;
         }
         return AirCheckResult.Default;

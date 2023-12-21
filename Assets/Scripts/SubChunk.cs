@@ -61,7 +61,7 @@ public class SubChunk : MonoBehaviour
         return level;
     }
 
-    public Block GetBlock(Vector3Int blockPos)
+    public EBlockType? GetBlock(Vector3Int blockPos)
     {
         int level = CalculateLocalBlockPosition(ref blockPos);
         return Chunk.GetBlock(level, blockPos.x, blockPos.y, blockPos.z);

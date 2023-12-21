@@ -266,7 +266,7 @@ public class Generator : MonoBehaviour
         chunk = chunkGO.AddComponent<Chunk>();
         chunk.Transform = chunkGO.transform;
         chunk.Position = chunk.Transform.position;
-        chunk.subChunks = new Block[height, size, size, size];
+        chunk.subChunks = new EBlockType[height, size, size, size];
         chunk.ChunkPos = new((int)rootPos.x / size, (int)rootPos.z / size);
         chunkGO.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y} pregenerated";
     }

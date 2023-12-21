@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text.Json;
 using UnityEngine;
 
 public static class SaveManager
@@ -25,14 +24,14 @@ public static class SaveManager
                 state += $"width={ChunkManager.Instance.width}\n";
                 state += $"height={ChunkManager.Instance.chunkHeight}\n";
                 state += $"blocks=";
-                foreach (var subChunk in chunk.subChunks)
+                foreach (var block in chunk.subChunks)
                 {
-                    if (currentType == subChunk.Type) sameBlockCount++;
+                    if (currentType == block) sameBlockCount++;
                     else
                     {
                         state += $"{sameBlockCount}x{(int)currentType};";
                         sameBlockCount = 1;
-                        currentType = subChunk.Type;
+                        currentType = block;
                     }
                 }
                 state += $"{sameBlockCount}x{(int)currentType};";
@@ -47,7 +46,7 @@ public static class SaveManager
         return File.Exists($"{Application.persistentDataPath}/{ChunkManager.Instance.Generator.threadedChunkBuilder.Seed}/{chunkPos.x},{chunkPos.y}.chunk");
     } 
 
-    public static Block[,,,] LoadChunk()
+    public static EBlockType[,,,] LoadChunk()
     {
         throw new NotImplementedException();
     }

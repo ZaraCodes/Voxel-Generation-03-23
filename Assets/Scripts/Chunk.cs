@@ -1,11 +1,10 @@
 using System;
-using System.Threading.Tasks;
 using UnityEngine;
 
 [Serializable]
 public class Chunk : MonoBehaviour
 {
-    public Block[,,,] subChunks;
+    public EBlockType[,,,] subChunks;
     public bool generationFinished;
 
     public Vector2Int ChunkPos { get; set; }
@@ -18,11 +17,11 @@ public class Chunk : MonoBehaviour
     {
         if (level < ChunkManager.Instance.chunkHeight && level >= 0 && x >= 0 && x < ChunkManager.Instance.width && y >= 0 && y < ChunkManager.Instance.width && z >= 0 && z < ChunkManager.Instance.width)
         {
-            subChunks[level, x, y, z].Type = blockType;
+            subChunks[level, x, y, z] = blockType;
         }
     }
 
-    public Block GetBlock(int level, int x, int y, int z)
+    public EBlockType? GetBlock(int level, int x, int y, int z)
     {
         if (level < ChunkManager.Instance.chunkHeight && level >= 0 && x >= 0 && x < ChunkManager.Instance.width && y >= 0 && y < ChunkManager.Instance.width && z >= 0 && z < ChunkManager.Instance.width)
         {

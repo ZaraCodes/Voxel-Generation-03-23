@@ -20,8 +20,11 @@ public class GameManager
 
     public ThreadedChunkBuilder ChunkBuilder { get; set; }
 
+    public BlockRegistry BlockRegistry { get; set; }
+
     private GameManager()
     {
         isLoading = false;
+        BlockRegistry = new BlockRegistry();
     }
 }
