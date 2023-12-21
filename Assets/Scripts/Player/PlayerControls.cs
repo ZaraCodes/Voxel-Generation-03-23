@@ -113,7 +113,7 @@ public class PlayerControls : MonoBehaviour
         debugText.text = $"FPS: {(int)(1 / Time.deltaTime)}\n";
         debugText.text += $"X: {Math.Round(transform.position.x, 4).ToString().PadRight(6, '0')}\tY: {Math.Round(transform.position.y, 4).ToString().PadRight(6, '0')}\tZ: {Math.Round(transform.position.z, 4).ToString().PadRight(6, '0')}\n";
         debugText.text += $"Hilliness: {GameManager.Instance.ChunkBuilder.EvaluateHilliness(transform.position)}\n";
-        debugText.text += $"World Height: {GameManager.Instance.ChunkBuilder.EvaluateWorldHeight(transform.position)}\n";
+        debugText.text += $"World Height: {GameManager.Instance.ChunkBuilder.EvaluateWorldHeight(transform.position, generator.WorldHeightCurve)}\n";
 
         debugText.text += $"Grounded: {CharCtrl.isGrounded}\n";
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))

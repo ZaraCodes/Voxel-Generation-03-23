@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.Threading.Tasks;
 using UnityEngine;
 using Unity.Burst;
-using Unity.VisualScripting;
 
-//[BurstCompile]
+[BurstCompile]
 public class Generator : MonoBehaviour
 {
     /// <summary>Reference to the material that gets applied to the mesh</summary>
@@ -17,6 +16,7 @@ public class Generator : MonoBehaviour
     private Material mWaterMaterial;
 
     [SerializeField] private AnimationCurve worldHeightCurve;
+    public AnimationCurve WorldHeightCurve { get { return worldHeightCurve; } }
 
     /// <summary>Generated mesh</summary>
     private Mesh mesh;
@@ -237,7 +237,7 @@ public class Generator : MonoBehaviour
         Task[] blockDataTasks = new Task[height];
         for (int level = 0; level < height; level++)
         {
-            blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, rootPos, cornerPos, level, size, ChunkManager.Instance.chunkOffsetY);
+            blockDataTasks[level] = threadedChunkBuilder.StartGenerateBlockData(chunk, level, size, new(worldHeightCurve.keys));
         }
         yield return WaitForTasks(blockDataTasks, chunk);
         // Task.WaitAll(blockDataTasks);

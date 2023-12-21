@@ -1,10 +1,10 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using UnityEditor;
+using Unity.Burst;
 using UnityEngine;
-using UnityEngine.Rendering;
 
+[BurstCompile]
 public class ThreadedChunkBuilder
 {
     int octaves = 3;
@@ -159,7 +159,7 @@ public class ThreadedChunkBuilder
     /// <param name="height"></param>
     /// <returns></returns>
     public List<BlockAndItsFaces> BuildBlockSides(Chunk chunk, Chunk[] neighborChunks, int level, int size, int height)
-    {
+    {        
         List<BlockAndItsFaces> subChunkData = new List<BlockAndItsFaces>();
         for (int i = 0; i < size; i++)
         {
@@ -269,14 +269,13 @@ public class ThreadedChunkBuilder
         return subChunkData;
     }
 
-    public Task StartGenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size, int yOffset)
+    public Task StartGenerateBlockData(Chunk chunk, int level, int size, AnimationCurve worldHeightCurve)
     {
-        return Task.Run(() => { GenerateBlockData(chunk, rootPos, cornerPos, level, size, yOffset); });
+        return Task.Run(() => { GenerateBlockData(chunk, level, size, worldHeightCurve); });
     }
 
-    private void GenerateBlockData(Chunk chunk, Vector3 rootPos, Vector3 cornerPos, int level, int size, int yOffset)
+    private void GenerateBlockData(Chunk chunk, int level, int size, AnimationCurve worldHeightCurve)
     {
-        // (int)(rootPos.x + cornerPos.x + size)
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < size; y++)
@@ -285,7 +284,7 @@ public class ThreadedChunkBuilder
                 {
                     EBlockType b;
                     Vector3 blockPosition = new(chunk.GetBlockX(x), ChunkManager.Instance.GetBlockY(level, y), chunk.GetBlockZ(z));
-                    if (Evaluate3DNoise(blockPosition)) b = EBlockType.Stone;
+                    if (Evaluate3DNoise(blockPosition, worldHeightCurve)) b = EBlockType.Stone;
                     else
                     {
                         if (blockPosition.y <= 0)
@@ -330,7 +329,7 @@ public class ThreadedChunkBuilder
         }
     }
 
-    public bool Evaluate3DNoise(Vector3 position)
+    public bool Evaluate3DNoise(Vector3 position, AnimationCurve worldHeightCurve)
     {
         float noise = 0f;
         float divisor = 0f;
@@ -342,11 +341,11 @@ public class ThreadedChunkBuilder
         }
         noise /= divisor;
 
-        var threshold = EvaluateHilliness(position) * 75;
-        var worldHeight = EvaluateWorldHeight(position);
+        var threshold = EvaluateHilliness(position) * 75f;
+        var worldHeight = EvaluateWorldHeight(position, worldHeightCurve);
 
-        //if (-worldHeight + 0.1f + position.y / threshold < noise)
-        if ((worldHeight - 0.2f) * 1.5f > position.y / 100f)
+        if (-worldHeight + 0.1f + position.y / threshold < noise)
+            //if ((worldHeight - 0.2f) * 1.5f > position.y / 100f)
             return true;
         return false;
     }
@@ -356,15 +355,16 @@ public class ThreadedChunkBuilder
     /// <returns></returns>
     public float EvaluateHilliness(Vector3 position)
     {
-        return (hillinessNoise.Evaluate(new Vector3(position.x * frequency, 100f, position.z * frequency) / 10) + 1) / 2;
+        return (hillinessNoise.Evaluate(new Vector3(position.x * frequency, 100f, position.z * frequency) / 10f) + 1f) / 2f;
     }
 
     /// <summary>Evaluates the world height at the given position</summary>
     /// <param name="position">A value between 0 and 1</param>
     /// <returns></returns>
-    public float EvaluateWorldHeight(Vector3 position)
+    public float EvaluateWorldHeight(Vector3 position, AnimationCurve worldHeightCurve)
     {
-        return worldHeightCurve.Evaluate((worldHeightNoise.Evaluate(new Vector3(position.x * frequency, 0f, position.z * frequency) / 20) + 1) / 2);
+        return worldHeightCurve.Evaluate((worldHeightNoise.Evaluate(new Vector3(position.x * frequency, 0f, position.z * frequency) / 20f) + 1f) / 2f);
+        //return (worldHeightNoise.Evaluate(new Vector3(position.x * frequency, 0f, position.z * frequency) / 20f) + 1f) / 2f;
     }
 
     public Task StartPopulateChunk(Chunk chunk, int level, int size, int height)
@@ -402,6 +402,7 @@ public class ThreadedChunkBuilder
                         else if (result == AirCheckResult.Continue)
                         {
                             chunk.subChunks[level, x, y, z] = EBlockType.Grass;
+                            if (x == size / 2 && z == size / 2 && chunk.subChunks[level, x, y, z] == EBlockType.Grass) GenerateTree(chunk, level, size, x, y, z);
                             continue;
                         }
 
@@ -430,19 +431,60 @@ public class ThreadedChunkBuilder
     public void GenerateTree(Chunk chunk, int level, int size, int x, int y, int z)
     {
         // replace grass block with dirt
-        if (y == 0) chunk.UpdateBlock(EBlockType.Dirt, level - 1, x, size - 1, z);
-        else chunk.UpdateBlock(EBlockType.Dirt, level, x, y - 1, z);
+        //if (y == 0) chunk.UpdateBlock(EBlockType.Dirt, level - 1, x, size - 1, z);
+        //else
+        var treeHeight = 8;
+        chunk.UpdateBlock(EBlockType.Dirt, level, x, y, z);
         
-        for (int i = 0; i < 5; i++)
+        for (int i = 1; i < treeHeight; i++)
         {
             int level2 = level;
             int y2 = y;
-            while (y2 + i > size)
+            while (y2 + i >= size)
             {
                 y2 -= size;
                 level2++;
             }
-            chunk.UpdateBlock(EBlockType.WoodLog, level2, x, y2 + i, z);
+            if (i > treeHeight - 3)
+            {
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z - 1);
+            }
+            else
+                chunk.UpdateBlock(EBlockType.WoodLog, level2, x, y2 + i, z);
+            if (i == treeHeight - 2)
+            {
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z + 1);
+            }
+            else if (i == treeHeight - 3 || i == treeHeight - 4)
+            {
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z + 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 1, y2 + i, z - 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z + 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x, y2 + i, z - 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z + 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 1, y2 + i, z - 2);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 2, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 2, y2 + i, z - 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 2, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 2, y2 + i, z);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x + 2, y2 + i, z + 1);
+                chunk.UpdateBlock(EBlockType.Leafes, level2, x - 2, y2 + i, z + 1);
+            }
         }
     }
 

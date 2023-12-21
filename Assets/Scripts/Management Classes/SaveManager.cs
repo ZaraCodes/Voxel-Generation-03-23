@@ -6,6 +6,7 @@ public static class SaveManager
 {
     public static void SaveChunk(Chunk chunk)
     {
+        return;
         var path = $"{Application.persistentDataPath}/{ChunkManager.Instance.Generator.threadedChunkBuilder.Seed}";
         if (!Directory.Exists(path))
         {

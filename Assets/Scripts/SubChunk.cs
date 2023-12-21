@@ -87,6 +87,11 @@ public class SubChunk : MonoBehaviour
         Vector2Int chunkPos = chunk.ChunkPos;
 
         int level = CalculateLocalBlockPosition(ref blockPos);
+        if (level >= ChunkManager.Instance.chunkHeight || level < 0)
+        {
+            Debug.Log("You can't build outside the build limit.");
+            return;
+        }
 
         chunk.UpdateBlock(blockType, level, blockPos.x, blockPos.y, blockPos.z);
 
