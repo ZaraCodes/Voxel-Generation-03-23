@@ -15,8 +15,13 @@ public class SubChunk : MonoBehaviour
 
         int level = CalculateLocalBlockPosition(ref blockPos);
 
-        Chunk.UpdateBlock(EBlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
+        Chunk.SetBlock(EBlockType.Air, level, blockPos.x, blockPos.y, blockPos.z);
 
+        ExecuteMeshUpdate(Chunk, blockPos, chunkPos, level);
+    }
+
+    public static void ExecuteMeshUpdate(Chunk chunk, Vector3Int blockPos, Vector2Int chunkPos, int level)
+    {
         Chunk[] neighborChunks = new Chunk[]
         {
             ChunkManager.Instance.GetChunk(new Vector2Int(chunkPos.x + 1, chunkPos.y)).GetComponent<Chunk>(),
@@ -25,13 +30,13 @@ public class SubChunk : MonoBehaviour
             ChunkManager.Instance.GetChunk(new Vector2Int(chunkPos.x, chunkPos.y - 1)).GetComponent<Chunk>()
         };
 
-        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight);
-        ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level, blockAndItsFaces, false);
+        List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight);
+        ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level, blockAndItsFaces, false);
 
         if (blockPos.y == 0 && level != 0)
-            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level - 1, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight), false);
+            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level - 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level - 1, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight), false);
         else if (blockPos.y == ChunkManager.Instance.Width - 1 && level != ChunkManager.Instance.chunkHeight - 1)
-            ChunkManager.Instance.Generator.GenerateSubChunk(Chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(Chunk, neighborChunks, level + 1, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight), false);
+            ChunkManager.Instance.Generator.GenerateSubChunk(chunk, level + 1, ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunk, neighborChunks, level + 1, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight), false);
 
         if (blockPos.x == 0)
             UpdateNeighborChunk(new(chunkPos.x - 1, chunkPos.y), level, neighborChunks, 1);
@@ -41,7 +46,6 @@ public class SubChunk : MonoBehaviour
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y - 1), level, neighborChunks, 3);
         else if (blockPos.z == ChunkManager.Instance.Width - 1)
             UpdateNeighborChunk(new(chunkPos.x, chunkPos.y + 1), level, neighborChunks, 2);
-
     }
 
     public static int CalculateLocalBlockPosition(ref Vector3Int blockPos)
@@ -93,7 +97,7 @@ public class SubChunk : MonoBehaviour
             return;
         }
 
-        chunk.UpdateBlock(blockType, level, blockPos.x, blockPos.y, blockPos.z);
+        chunk.SetBlock(blockType, level, blockPos.x, blockPos.y, blockPos.z);
 
         Chunk[] neighborChunks = new Chunk[]
         {

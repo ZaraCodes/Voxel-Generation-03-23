@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class UVSetter : MonoBehaviour
 {
-    private static float offset = 0.001f;
+    private static float offset = 0.005f;
     public static Vector2[] GetUVs(EBlockType blockType, EBlockFace blockFace)
     {
         switch (blockType)

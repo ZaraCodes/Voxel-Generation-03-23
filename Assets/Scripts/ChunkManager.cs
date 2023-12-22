@@ -85,7 +85,7 @@ public class ChunkManager : MonoBehaviour
                 if (false && SaveManager.DoesChunkExist(currChunkCoord)) {
                     SaveManager.LoadChunk();
                 }
-                else if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].ChunkObj.GetComponent<Chunk>().generationFinished)
+                else if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].ChunkObj.GetComponent<Chunk>().GenerationFinished)
                 {
                     Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
                     GameObject newChunkObj = null;

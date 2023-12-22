@@ -215,7 +215,7 @@ public class Generator : MonoBehaviour
     {
         GenerateChunkObject(rootPos, parent, size, height, out GameObject chunkGO, out Chunk chunk);
 
-        Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
+        //Vector3 cornerPos = new(-size / 2f, 0f, -size / 2f);
 
         //stopwatch1 = new();
         //if (logPerformance)
@@ -253,7 +253,7 @@ public class Generator : MonoBehaviour
         }
         yield return WaitForTasks(populationTasks, chunk);
 
-        chunk.generationFinished = false;
+        chunk.GenerationFinished = false;
         ChunkManager.Instance.AddChunk(chunk.ChunkPos, chunkGO);
     }
 
@@ -266,7 +266,8 @@ public class Generator : MonoBehaviour
         chunk = chunkGO.AddComponent<Chunk>();
         chunk.Transform = chunkGO.transform;
         chunk.Position = chunk.Transform.position;
-        chunk.subChunks = new EBlockType[height, size, size, size];
+        chunk.SubChunks = new EBlockType[height, size, size, size];
+        chunk.QueuedMeshUpdates = new bool[height];
         chunk.ChunkPos = new((int)rootPos.x / size, (int)rootPos.z / size);
         chunkGO.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y} pregenerated";
     }
@@ -301,7 +302,14 @@ public class Generator : MonoBehaviour
             chunk = generatedChunk.GetComponent<Chunk>();
             Vector2Int[] neighborChunks = new Vector2Int[]
             {
-                Vector2Int.down, Vector2Int.up, Vector2Int.left, Vector2Int.right
+                Vector2Int.down,
+                Vector2Int.up,
+                Vector2Int.left,
+                Vector2Int.right,
+                Vector2Int.down + Vector2Int.left,
+                Vector2Int.down + Vector2Int.right,
+                Vector2Int.up + Vector2Int.left,
+                Vector2Int.up + Vector2Int.right
             };
             foreach (var neighbor in neighborChunks)
             {
@@ -326,12 +334,52 @@ public class Generator : MonoBehaviour
         if (logPerformance)
             stopwatch1.Restart();
         Chunk[] neighborChunkObjects = new Chunk[]
-{
+        {
             ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x + 1, chunk.ChunkPos.y)).GetComponent<Chunk>(),
             ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x - 1, chunk.ChunkPos.y)).GetComponent<Chunk>(),
             ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x, chunk.ChunkPos.y + 1)).GetComponent<Chunk>(),
-            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x, chunk.ChunkPos.y - 1)).GetComponent<Chunk>()
+            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x, chunk.ChunkPos.y - 1)).GetComponent<Chunk>(),
+            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x + 1, chunk.ChunkPos.y + 1)).GetComponent<Chunk>(),
+            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x + 1, chunk.ChunkPos.y - 1)).GetComponent<Chunk>(),
+            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x - 1, chunk.ChunkPos.y + 1)).GetComponent<Chunk>(),
+            ChunkManager.Instance.GetChunk(new Vector2Int(chunk.ChunkPos.x - 1, chunk.ChunkPos.y - 1)).GetComponent<Chunk>(),
         };
+
+        Task[] decorationTasks = new Task[height];
+        for (int level = 0; level < height; level++)
+        {
+            decorationTasks[level] = threadedChunkBuilder.StartChunkDecorationTasks(chunk, neighborChunkObjects, level, size);
+        }
+        yield return WaitForTasks(decorationTasks, chunk);
+        if (logPerformance)
+        {
+            stopwatch1.Stop();
+            print($"Chunk {chunk.name} Decoration: {stopwatch1.Elapsed.Milliseconds}");
+        }
+
+        foreach (var chunkx in neighborChunkObjects)
+        {
+            for (int level = 0; level < chunkx.QueuedMeshUpdates.Length; level++)
+            {
+                if (chunkx.QueuedMeshUpdates[level])
+                {
+                    Chunk[] neighborChunkObjects2 = new Chunk[]
+                    {
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x + 1, chunkx.ChunkPos.y)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x - 1, chunkx.ChunkPos.y)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x, chunkx.ChunkPos.y + 1)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x, chunkx.ChunkPos.y - 1)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x + 1, chunkx.ChunkPos.y + 1)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x + 1, chunkx.ChunkPos.y - 1)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x - 1, chunkx.ChunkPos.y + 1)).GetComponent<Chunk>(),
+                        ChunkManager.Instance.GetChunk(new Vector2Int(chunkx.ChunkPos.x - 1, chunkx.ChunkPos.y - 1)).GetComponent<Chunk>(),
+                    };
+                    List<BlockAndItsFaces> blockAndItsFaces = ChunkManager.Instance.Generator.threadedChunkBuilder.BuildBlockSides(chunkx, neighborChunkObjects2, level, ChunkManager.Instance.Width, ChunkManager.Instance.chunkHeight);
+                    ChunkManager.Instance.Generator.GenerateSubChunk(chunkx, level, blockAndItsFaces, false);
+                }
+            }
+        }
+
         List<BlockAndItsFaces>[] chunkData = new List<BlockAndItsFaces>[height];
         Task[] blockSidesTasks = new Task[height];
 
@@ -362,7 +410,7 @@ public class Generator : MonoBehaviour
             stopwatch1.Stop();
             print($"Chunk {chunk.name} Mesh Creation: {stopwatch1.Elapsed.Milliseconds}");
         }
-        chunk.generationFinished = true;
+        chunk.GenerationFinished = true;
         generatedChunk.name = $"{chunk.ChunkPos.x}/{chunk.ChunkPos.y}";
         callback.Invoke(generatedChunk);
     }

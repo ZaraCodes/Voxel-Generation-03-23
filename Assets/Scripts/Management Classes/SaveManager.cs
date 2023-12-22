@@ -25,7 +25,7 @@ public static class SaveManager
                 state += $"width={ChunkManager.Instance.Width}\n";
                 state += $"height={ChunkManager.Instance.chunkHeight}\n";
                 state += $"blocks=";
-                foreach (var block in chunk.subChunks)
+                foreach (var block in chunk.SubChunks)
                 {
                     if (currentType == block) sameBlockCount++;
                     else
