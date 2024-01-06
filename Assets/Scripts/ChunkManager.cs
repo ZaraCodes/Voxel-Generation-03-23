@@ -57,16 +57,18 @@ public class ChunkManager : MonoBehaviour
 
     [SerializeField] private GameObject loadingScreen;
 
+    private bool stopGeneratingChunks;
+
+    private Coroutine chunkUpdateCoroutine;
+
+    private Vector2Int prevViewerChunkCoord;
+
     /// <summary>Updates the visible chunks each frame</summary>
-    private IEnumerator UpdateChunks()
+    private IEnumerator UpdateChunks(Vector2Int currentViewerChunkCoord)
     {
+        prevViewerChunkCoord = currentViewerChunkCoord;
         updatingChunks = true;
         List<Vector2Int> newActiveChunks = new();
-
-        Vector2 currViewerPos = ViewerPos / chunkSize;
-        Vector2Int currentViewerChunkCoord = new(
-            Mathf.RoundToInt(currViewerPos.x),
-            Mathf.RoundToInt(currViewerPos.y));
 
         foreach (Vector2Int pos in SettingsManager.Instance.ViewArea)
         {
@@ -82,6 +84,7 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
+                if (stopGeneratingChunks) continue;
                 if (false && SaveManager.DoesChunkExist(currChunkCoord)) {
                     SaveManager.LoadChunk();
                 }
@@ -234,8 +237,22 @@ public class ChunkManager : MonoBehaviour
 
     private void Update()
     {
+        Vector2 currViewerPos = ViewerPos / chunkSize;
+        Vector2Int currentViewerChunkCoord = new(Mathf.RoundToInt(currViewerPos.x), Mathf.RoundToInt(currViewerPos.y));
+
         if (!updatingChunks)
-            StartCoroutine(UpdateChunks());
+        {
+            stopGeneratingChunks = false;
+            chunkUpdateCoroutine = StartCoroutine(UpdateChunks(currentViewerChunkCoord));
+        }
+        else
+        {
+            if (currentViewerChunkCoord != prevViewerChunkCoord)
+            {
+                stopGeneratingChunks = true;
+            }
+        }
+
         // generator.GenerateChunk(new(0, 0, 0), transform);
     }
 
