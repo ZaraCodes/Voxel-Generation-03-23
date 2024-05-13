@@ -116,6 +116,15 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Debug Screen"",
+                    ""type"": ""Button"",
+                    ""id"": ""c95eb970-1547-4586-bb3e-73e440084fe8"",
+                    ""expectedControlType"": ""Button"",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -228,6 +237,17 @@ public partial class @Controls: IInputActionCollection2, IDisposable
                     ""action"": ""Hotkey 0"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""5c42ec4a-9701-43a8-a48c-50946c116080"",
+                    ""path"": ""<Keyboard>/f3"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Debug Screen"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -263,6 +283,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         m_Player_Hotkey8 = m_Player.FindAction("Hotkey 8", throwIfNotFound: true);
         m_Player_Hotkey9 = m_Player.FindAction("Hotkey 9", throwIfNotFound: true);
         m_Player_Hotkey0 = m_Player.FindAction("Hotkey 0", throwIfNotFound: true);
+        m_Player_DebugScreen = m_Player.FindAction("Debug Screen", throwIfNotFound: true);
     }
 
     public void Dispose()
@@ -334,6 +355,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
     private readonly InputAction m_Player_Hotkey8;
     private readonly InputAction m_Player_Hotkey9;
     private readonly InputAction m_Player_Hotkey0;
+    private readonly InputAction m_Player_DebugScreen;
     public struct PlayerActions
     {
         private @Controls m_Wrapper;
@@ -348,6 +370,7 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         public InputAction @Hotkey8 => m_Wrapper.m_Player_Hotkey8;
         public InputAction @Hotkey9 => m_Wrapper.m_Player_Hotkey9;
         public InputAction @Hotkey0 => m_Wrapper.m_Player_Hotkey0;
+        public InputAction @DebugScreen => m_Wrapper.m_Player_DebugScreen;
         public InputActionMap Get() { return m_Wrapper.m_Player; }
         public void Enable() { Get().Enable(); }
         public void Disable() { Get().Disable(); }
@@ -387,6 +410,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Hotkey0.started += instance.OnHotkey0;
             @Hotkey0.performed += instance.OnHotkey0;
             @Hotkey0.canceled += instance.OnHotkey0;
+            @DebugScreen.started += instance.OnDebugScreen;
+            @DebugScreen.performed += instance.OnDebugScreen;
+            @DebugScreen.canceled += instance.OnDebugScreen;
         }
 
         private void UnregisterCallbacks(IPlayerActions instance)
@@ -421,6 +447,9 @@ public partial class @Controls: IInputActionCollection2, IDisposable
             @Hotkey0.started -= instance.OnHotkey0;
             @Hotkey0.performed -= instance.OnHotkey0;
             @Hotkey0.canceled -= instance.OnHotkey0;
+            @DebugScreen.started -= instance.OnDebugScreen;
+            @DebugScreen.performed -= instance.OnDebugScreen;
+            @DebugScreen.canceled -= instance.OnDebugScreen;
         }
 
         public void RemoveCallbacks(IPlayerActions instance)
@@ -459,5 +488,6 @@ public partial class @Controls: IInputActionCollection2, IDisposable
         void OnHotkey8(InputAction.CallbackContext context);
         void OnHotkey9(InputAction.CallbackContext context);
         void OnHotkey0(InputAction.CallbackContext context);
+        void OnDebugScreen(InputAction.CallbackContext context);
     }
 }
