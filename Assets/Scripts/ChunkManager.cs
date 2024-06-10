@@ -20,7 +20,6 @@ public class ChunkManager : MonoBehaviour
 
     /// <summary>Reference to the generator</summary>
     [SerializeField] private Generator generator;
-
     public Generator Generator { get { return generator; } }
 
     /// <summary>Reference to the viewer transform which is used to determine the active chunks</summary>
@@ -37,7 +36,7 @@ public class ChunkManager : MonoBehaviour
 
     public int chunkOffsetY;
 
-    public int width;
+    public int Width { get; private set; }
 
     public int chunkHeight;
 
@@ -58,16 +57,18 @@ public class ChunkManager : MonoBehaviour
 
     [SerializeField] private GameObject loadingScreen;
 
+    private bool stopGeneratingChunks;
+
+    private Coroutine chunkUpdateCoroutine;
+
+    private Vector2Int prevViewerChunkCoord;
+
     /// <summary>Updates the visible chunks each frame</summary>
-    private IEnumerator UpdateChunks()
+    private IEnumerator UpdateChunks(Vector2Int currentViewerChunkCoord)
     {
+        prevViewerChunkCoord = currentViewerChunkCoord;
         updatingChunks = true;
         List<Vector2Int> newActiveChunks = new();
-
-        Vector2 currViewerPos = ViewerPos / chunkSize;
-        Vector2Int currentViewerChunkCoord = new(
-            Mathf.RoundToInt(currViewerPos.x),
-            Mathf.RoundToInt(currViewerPos.y));
 
         foreach (Vector2Int pos in SettingsManager.Instance.ViewArea)
         {
@@ -83,12 +84,15 @@ public class ChunkManager : MonoBehaviour
             }
             else
             {
-                if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].chunkObj.GetComponent<Chunk>().generationFinished)
+                if (stopGeneratingChunks) continue;
+                if (false && SaveManager.DoesChunkExist(currChunkCoord)) {
+                    SaveManager.LoadChunk();
+                }
+                else if (!allChunkDic.ContainsKey(currChunkCoord) || !allChunkDic[currChunkCoord].ChunkObj.GetComponent<Chunk>().GenerationFinished)
                 {
                     Vector3 currChunkWorldPos = new(currChunkCoord.x * chunkSize, 0, currChunkCoord.y * chunkSize);
-                    // GameObject newChunkObj = generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight);
                     GameObject newChunkObj = null;
-                    yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, width, chunkHeight, returnValue =>
+                    yield return StartCoroutine(generator.GenerateChunk(currChunkWorldPos, transform, Width, chunkHeight, returnValue =>
                     {
                         newChunkObj = returnValue;
                     }));
@@ -101,6 +105,9 @@ public class ChunkManager : MonoBehaviour
         foreach (Vector2Int chunkInx in activeChunks)
         {
             allChunkDic[chunkInx].SetVisibility(false);
+            Chunk chunk = allChunkDic[chunkInx].ChunkObj.GetComponent<Chunk>();
+            SaveManager.SaveChunk(chunk);
+            //allChunkDic.Remove(chunkInx);
         }
         activeChunks = newActiveChunks;
         updatingChunks = false;
@@ -131,7 +138,7 @@ public class ChunkManager : MonoBehaviour
             loadingText.text = $"Generating Chunks... {(int)(step * 100 / numberOfSteps)}%";
             loadingBar.sizeDelta = new(barLength * (step / numberOfSteps), 30);
             GameObject newChunkObj = null;
-            yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
+            yield return StartCoroutine(generator.GenerateChunk(new(pos.x * chunkSize, 0, pos.y * chunkSize), transform, Width, chunkHeight, returnValue => { newChunkObj = returnValue; }));
             if (!allChunkDic.ContainsKey(pos))
                 allChunkDic.Add(pos, new ChunkPrivate(newChunkObj));
             activeChunks.Add(pos);
@@ -147,13 +154,13 @@ public class ChunkManager : MonoBehaviour
                 bool breaking = false;
                 for (int y = 15; y >= 0; y--)
                 {
-                    Block block = spawnChunk.GetBlock(level, width / 2, y, width / 2);
-                    if (block != null && block.Type != BlockType.Air)
+                    var block = spawnChunk.GetBlock(level, Width / 2, y, Width / 2);
+                    if (block != null && block != EBlockType.Air)
                     {
                         breaking = true;
 
                         // changes the player position
-                        viewerTransform.parent.position = new(block.position.x + 0.5f, block.position.y, block.position.z + 0.5f);
+                        viewerTransform.parent.position = new(.5f, GetBlockY(level, y), .5f);
                         viewerTransform.parent.gameObject.GetComponent<CharacterController>().enabled = true;
                         viewerTransform.parent.gameObject.GetComponent<PlayerControls>().SetMovementActive(true);
                         break;
@@ -167,6 +174,7 @@ public class ChunkManager : MonoBehaviour
         GameManager.Instance.IsLoading = false;
     }
 
+    public int GetBlockY(int level, int y) => (int) (level * chunkSize + y - chunkOffsetY * chunkSize);
     public Vector2Int GetChunkCoordinate(Vector3 position)
     {
         return new(Mathf.RoundToInt(position.x / chunkSize + 0.01f), Mathf.RoundToInt(position.z / chunkSize + 0.01f));
@@ -176,7 +184,7 @@ public class ChunkManager : MonoBehaviour
     {
         if (allChunkDic.TryGetValue(chunkPos, out var chunk))
         {
-            return chunk.chunkObj;
+            return chunk.ChunkObj;
         }
         return null;
     }
@@ -196,25 +204,24 @@ public class ChunkManager : MonoBehaviour
     private class ChunkPrivate
     {
         /// <summary>The Chunk GameObject</summary>
-        public GameObject chunkObj;
+        public GameObject ChunkObj;
 
         /// <summary>Position of the chunk</summary>
-        public Vector3 position;
-        private Vector3 Position => position;
+        public Vector3 Position;
 
         /// <summary>Constructor of this Class</summary>
         /// <param name="chunkObj">The Chunk GameObject</param>
         public ChunkPrivate(GameObject chunkObj)
         {
-            this.chunkObj = chunkObj;
-            position = chunkObj.transform.position;
+            this.ChunkObj = chunkObj;
+            Position = chunkObj.transform.position;
         }
 
         /// <summary>Makes a chunk visible or invisible</summary>
         /// <param name="isVisible">bool that sets this chunk's visibility</param>
         public void SetVisibility(bool isVisible)
         {
-            chunkObj.SetActive(isVisible);
+            ChunkObj.SetActive(isVisible);
         }
     }
 
@@ -222,7 +229,7 @@ public class ChunkManager : MonoBehaviour
     {
         allChunkDic = new Dictionary<Vector2Int, ChunkPrivate>();
         activeChunks = new List<Vector2Int>();
-        width = (int)chunkSize;
+        Width = (int)chunkSize;
         SettingsManager.Instance.ViewDistance = renderDistance;
         StartCoroutine(CreateSpawnArea());
         // generator.GenerateChunk(new(0, 0, 0), transform);
@@ -230,8 +237,22 @@ public class ChunkManager : MonoBehaviour
 
     private void Update()
     {
+        Vector2 currViewerPos = ViewerPos / chunkSize;
+        Vector2Int currentViewerChunkCoord = new(Mathf.RoundToInt(currViewerPos.x), Mathf.RoundToInt(currViewerPos.y));
+
         if (!updatingChunks)
-            StartCoroutine(UpdateChunks());
+        {
+            stopGeneratingChunks = false;
+            chunkUpdateCoroutine = StartCoroutine(UpdateChunks(currentViewerChunkCoord));
+        }
+        else
+        {
+            if (currentViewerChunkCoord != prevViewerChunkCoord)
+            {
+                stopGeneratingChunks = true;
+            }
+        }
+
         // generator.GenerateChunk(new(0, 0, 0), transform);
     }
 
@@ -244,7 +265,7 @@ public class ChunkManager : MonoBehaviour
             foreach (KeyValuePair<Vector2Int, ChunkPrivate> entry in allChunkDic)
             {
                 ChunkPrivate c = entry.Value;
-                Gizmos.DrawWireCube(c.position, new Vector3(chunkSize, 0, chunkSize));
+                Gizmos.DrawWireCube(c.Position, new Vector3(chunkSize, 0, chunkSize));
             }
         }
     }

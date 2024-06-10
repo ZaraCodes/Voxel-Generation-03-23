@@ -13,7 +13,7 @@ public class PlayerControls : MonoBehaviour
     private BoxCollider entityCollider;
     [SerializeField] private ChunkManager chunkManager;
     [SerializeField] private Generator generator;
-    [SerializeField] private BlockType selectedBlock;
+    [SerializeField] private EBlockType selectedBlock;
     /// <summary>
     /// Reference to the input system class
     /// </summary>
@@ -41,6 +41,8 @@ public class PlayerControls : MonoBehaviour
     bool movementActive = true;
 
     [SerializeField] private TMP_Text debugText;
+    private bool showDebugText;
+
 
     [SerializeField] private SelectedCubeLineDrawer cubeDrawer;
 
@@ -76,7 +78,7 @@ public class PlayerControls : MonoBehaviour
         controls.Player.Hotkey7.performed += OnHotkey7;
         controls.Player.Hotkey8.performed += OnHotkey8;
         controls.Player.Hotkey9.performed += OnHotkey9;
-
+        controls.Player.DebugScreen.performed += OnDebugMenuPressed;
     }
 
     // Update is called once per frame
@@ -110,12 +112,15 @@ public class PlayerControls : MonoBehaviour
 
     private void RaycastThing()
     {
-        debugText.text = $"FPS: {(int)(1 / Time.deltaTime)}\n";
-        debugText.text += $"X: {Math.Round(transform.position.x, 4).ToString().PadRight(6, '0')}\tY: {Math.Round(transform.position.y, 4).ToString().PadRight(6, '0')}\tZ: {Math.Round(transform.position.z, 4).ToString().PadRight(6, '0')}\n";
-        debugText.text += $"Hilliness: {GameManager.Instance.ChunkBuilder.EvaluateHilliness(transform.position)}\n";
-        debugText.text += $"World Height: {GameManager.Instance.ChunkBuilder.EvaluateWorldHeight(transform.position)}\n";
+        if (showDebugText)
+        {
+            debugText.text = $"FPS: {(int)(1 / Time.deltaTime)}\n";
+            debugText.text += $"X: {Math.Round(transform.position.x, 4).ToString().PadRight(6, '0')}\tY: {Math.Round(transform.position.y, 4).ToString().PadRight(6, '0')}\tZ: {Math.Round(transform.position.z, 4).ToString().PadRight(6, '0')}\n";
+            debugText.text += $"Hilliness: {GameManager.Instance.ChunkBuilder.EvaluateHilliness(transform.position)}\n";
+            debugText.text += $"World Height: {GameManager.Instance.ChunkBuilder.EvaluateWorldHeight(transform.position, generator.WorldHeightCurve)}\n";
+            debugText.text += $"Grounded: {CharCtrl.isGrounded}\n";
+        }
 
-        debugText.text += $"Grounded: {CharCtrl.isGrounded}\n";
         if (Physics.Raycast(PlayerCamera.transform.position, PlayerCamera.transform.forward, out RaycastHit hit, 6f))
         {
             Vector3Int blockPos;
@@ -138,11 +143,13 @@ public class PlayerControls : MonoBehaviour
                     break;
             }
 
-            if (debugText.gameObject.activeInHierarchy)
+            if (showDebugText && debugText.gameObject.activeInHierarchy)
             {
                 debugText.text += $"Looking at\nX:{blockPos.x} Y:{blockPos.y} Z:{blockPos.z}\n";
-                SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                debugText.text += $"{targetSubChunk.GetBlock(blockPos).Type}\n";
+                if (hit.collider.TryGetComponent(out SubChunk targetSubChunk) || hit.collider.transform.parent.TryGetComponent(out targetSubChunk))
+                {
+                    debugText.text += $"{targetSubChunk.GetBlock(blockPos)}\n";
+                }
             }
             cubeDrawer.CubePosition = blockPos;
             Debug.DrawLine(blockPos, blockPos + Vector3.forward);
@@ -154,8 +161,10 @@ public class PlayerControls : MonoBehaviour
                 if (blockCooldownTimer <= 0)
                 {
                     blockCooldownTimer = breakCooldown;
-                    SubChunk targetSubChunk = hit.collider.GetComponent<SubChunk>();
-                    targetSubChunk.RemoveBlockAt(blockPos);
+                    if (hit.collider.TryGetComponent(out SubChunk targetSubChunk) || hit.collider.transform.parent.TryGetComponent(out targetSubChunk))
+                    {
+                        targetSubChunk.RemoveBlockAt(blockPos);
+                    }
                 }
                 blockCooldownTimer -= Time.deltaTime;
             }
@@ -311,7 +320,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Stone;
+            selectedBlock = EBlockType.Stone;
         }
     }
 
@@ -319,7 +328,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Dirt;
+            selectedBlock = EBlockType.Dirt;
         }
     }
 
@@ -327,7 +336,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Grass;
+            selectedBlock = EBlockType.Grass;
         }
     }
 
@@ -335,7 +344,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.WoodPlanks;
+            selectedBlock = EBlockType.WoodPlanks;
         }
     }
 
@@ -343,7 +352,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.WoodLog;
+            selectedBlock = EBlockType.WoodLog;
         }
     }
 
@@ -351,7 +360,7 @@ public class PlayerControls : MonoBehaviour
     {
         if (ctx.action.WasPerformedThisFrame())
         {
-            selectedBlock = BlockType.Leafes;
+            selectedBlock = EBlockType.Leafes;
         }
     }
 
@@ -375,6 +384,16 @@ public class PlayerControls : MonoBehaviour
         if (ctx.action.WasPerformedThisFrame())
         {
 
+        }
+    }
+
+    private void OnDebugMenuPressed(InputAction.CallbackContext ctx)
+    {
+        if (ctx.action.WasPerformedThisFrame())
+        {
+            showDebugText = !showDebugText;
+            if (showDebugText) debugText.gameObject.SetActive(true);
+            else debugText.gameObject.SetActive(false);
         }
     }
 
